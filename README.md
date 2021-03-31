@@ -6,8 +6,6 @@
 
   - [Intro](#intro)
   - [Third-party Libraries](#ThirdPartyLibraries)
-  - [Round System](#RoundSystem)
-  - [Economy Overview](#EconomyOverview)
   - [Media](#media)
   - [Changelog](#changelog)
 
