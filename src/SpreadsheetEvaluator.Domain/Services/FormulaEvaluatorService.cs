@@ -2,7 +2,6 @@
 using SpreadsheetEvaluator.Domain.Configuration;
 using SpreadsheetEvaluator.Domain.Extensions;
 using SpreadsheetEvaluator.Domain.Interfaces;
-using SpreadsheetEvaluator.Domain.MathModels;
 using SpreadsheetEvaluator.Domain.Models.Enums;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
 using System;
@@ -53,7 +52,7 @@ namespace SpreadsheetEvaluator.Domain.Services
 
                         if (individualCell.Value.Value is Formula formula) 
                         {
-                            if (formula.FormulaOperator.FormulaResultType == ResultType.Reference)
+                            if (formula.FormulaOperator.FormulaResultType == FormulaResultType.Reference)
                             {
                                 var referencedCell = computedJobs[jobIndex].Cells.SelectMany(x => x).FirstOrDefault(x => x.Key == formula.FormulaText);
 
@@ -80,7 +79,7 @@ namespace SpreadsheetEvaluator.Domain.Services
                                 var computationResult = individualCell.Value.Value;
                                 try
                                 {
-                                    if (formula.FormulaOperator.FormulaResultType != ResultType.Text)
+                                    if (formula.FormulaOperator.FormulaResultType != FormulaResultType.Text)
                                     {
                                         computationResult = new DataTable().Compute(computationResult.ToString(), null);
                                     }
