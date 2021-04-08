@@ -3,6 +3,6 @@
     public class ApplicationSettings
     {
         public string HubApiUrlGetJobs { get; set; }
-        public string HubApiUrlPostJobsUniqueUrl { get; set; }
+        public string DeveloperEmailAddress { get; set; }
     }
 }
