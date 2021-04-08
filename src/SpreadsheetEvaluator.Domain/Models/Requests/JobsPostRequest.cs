@@ -1,8 +1,19 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace SpreadsheetEvaluator.Domain.Models.Responses
+namespace SpreadsheetEvaluator.Domain.Models.Requests
 {
+    public class JobsPostRequest
+    {
+        [JsonProperty("email")]
+        [JsonRequired]
+        public string Email { get; set; }
+
+        [JsonProperty("results")]
+        [JsonRequired]
+        public List<JobsPostModel> Jobs { get; set; }
+    }
+
     public class JobsPostModel
     {
         [JsonProperty("id")]
