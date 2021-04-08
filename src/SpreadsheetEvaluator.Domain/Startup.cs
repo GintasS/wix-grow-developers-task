@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpreadsheetEvaluator.Domain.Configuration;
 using SpreadsheetEvaluator.Domain.Interfaces;
 using SpreadsheetEvaluator.Domain.Services;
 using SpreadsheetEvaluator.Domain.Utilities;
 using System;
-using System.Configuration;
 using System.IO;
 
 namespace SpreadsheetEvaluator.Domain
@@ -27,8 +25,11 @@ namespace SpreadsheetEvaluator.Domain
         private static void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddScoped<IHubService, HubService>();
+            serviceCollection.AddScoped<IFormulaEvaluatorService, FormulaEvaluatorService>();
+            serviceCollection.AddScoped<ISpreadsheetCreationService, SpreadsheetCreationService>();
             serviceCollection.AddHttpClient<HttpClientHelper>();
             serviceCollection.AddSingleton<HttpClientHelper>();
+            serviceCollection.AddSingleton<JsonHelper>();
 
         }
 
