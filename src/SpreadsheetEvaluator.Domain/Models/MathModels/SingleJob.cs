@@ -1,5 +1,4 @@
-﻿using SpreadsheetEvaluator.Domain.MathModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace SpreadsheetEvaluator.Domain.Models.MathModels

@@ -1,6 +1,6 @@
 ﻿using SpreadsheetEvaluator.Domain.Models.Enums;
 
-namespace SpreadsheetEvaluator.Domain.MathModels
+namespace SpreadsheetEvaluator.Domain.Models.MathModels
 {
     public class Formula
     {
@@ -23,7 +23,6 @@ namespace SpreadsheetEvaluator.Domain.MathModels
     {
         public string JsonName { get; set; }
         public string MathSymbol { get; set; }
-        public FormulaOperatorType FormulaOperatorType { get; set; }
-        public ResultType FormulaResultType { get; set; }
+        public FormulaResultType FormulaResultType { get; set; }
     }
 }
