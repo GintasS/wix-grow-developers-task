@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SpreadsheetEvaluator.Infrastructure
+﻿namespace SpreadsheetEvaluator.Infrastructure
 {
     public class Class1
     {
