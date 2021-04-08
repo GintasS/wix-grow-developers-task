@@ -6,42 +6,38 @@ namespace SpreadsheetEvaluator.Domain.Utilities
     {
         public static string GetValueOfAnyType(JObject jObject)
         {
-            var obj = jObject.DeepClone() as JObject;
-
-            if (obj.ContainsKey("text"))
+            if (jObject.ContainsKey("text"))
             {
-                return obj["text"].ToString();
+                return jObject["text"].ToString();
             }
-            else if (obj.ContainsKey("number"))
+            else if (jObject.ContainsKey("number"))
             {
-                return obj["number"].ToString();
+                return jObject["number"].ToString();
             }
-            else if (obj.ContainsKey("boolean"))
+            else if (jObject.ContainsKey("boolean"))
             {
-                return obj["boolean"].ToString();
+                return jObject["boolean"].ToString();
             }
             return "";
         }
 
         public static string GetValueOfAnyType(JProperty jProperty)
         {
-            var property = jProperty.DeepClone() as JProperty;
-
-            if (property.Value["reference"] != null)
+            if (jProperty.Value["reference"] != null)
             {
-                return property.Value["reference"].ToString();
+                return jProperty.Value["reference"].ToString();
             }
-            else if (property.Value["text"] != null)
+            else if (jProperty.Value["text"] != null)
             {
-                return property.Value["text"].ToString();
+                return jProperty.Value["text"].ToString();
             }
-            else if (property.Value["number"] != null)
+            else if (jProperty.Value["number"] != null)
             {
-                return property.Value["number"].ToString();
+                return jProperty.Value["number"].ToString();
             }
-            else if (property.Value["boolean"] != null)
+            else if (jProperty.Value["boolean"] != null)
             {
-                return property.Value["boolean"].ToString();
+                return jProperty.Value["boolean"].ToString();
             }
 
             return "";

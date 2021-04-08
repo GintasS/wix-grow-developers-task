@@ -64,7 +64,7 @@ namespace SpreadsheetEvaluator.Domain.Utilities
                         {
                             jobsPostValueModel.Values.text = individualCell.Value.Value.ToString();
                         }
-                        else if (individualCell.Value.CellType == CellType.Bool)
+                        else if (individualCell.Value.CellType == CellType.Boolean)
                         {
                             jobsPostValueModel.Values.boolean = (bool)individualCell.Value.Value;
                         }

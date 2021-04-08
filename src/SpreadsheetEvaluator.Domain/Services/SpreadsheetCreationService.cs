@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using SpreadsheetEvaluator.Domain.Configuration;
 using SpreadsheetEvaluator.Domain.Interfaces;
-using SpreadsheetEvaluator.Domain.MathModels;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
 using SpreadsheetEvaluator.Domain.Models.Responses;
 using SpreadsheetEvaluator.Domain.Utilities;
@@ -13,9 +12,7 @@ namespace SpreadsheetEvaluator.Domain.Services
 {
     // TODO: We may not catch constant values (now we are picking references nicely).
     // TODO: Make this parser more robust
-    // TODO: Update/Remove Nuget packages
     // TODO: Clean up code using suggestions from VS
-    // TODO: Move classes to folders
     // TODO: Better naming for everything almost
     // TODO: Tests
     // TODO: Move code out of this and other classes
@@ -34,14 +31,14 @@ namespace SpreadsheetEvaluator.Domain.Services
     {
         public List<SingleJob> Create(JobsRawResponse jobsRawResponse)
         {
-            var ourJobs = new List<SingleJob>();
+            var createdJobs = new List<SingleJob>();
             foreach (var value in jobsRawResponse.Jobs.Values.Children())
             {
                 var ret = RecursiveIteration(value, new SingleJob());
-                ourJobs.Add(ret);
+                createdJobs.Add(ret);
             }
 
-            return ourJobs;
+            return createdJobs;
         }
 
         private SingleJob RecursiveIteration(IEnumerable<JToken> tokens, SingleJob singleJob)
