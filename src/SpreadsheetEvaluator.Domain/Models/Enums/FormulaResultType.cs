@@ -1,12 +1,11 @@
 ﻿namespace SpreadsheetEvaluator.Domain.Models.Enums
 {
-    public enum CellType 
+    public enum FormulaResultType
     { 
         Number, 
         Text, 
         Boolean,
-        Formula, 
-        Error, 
+        Reference,
         Undefined
     }
 }
