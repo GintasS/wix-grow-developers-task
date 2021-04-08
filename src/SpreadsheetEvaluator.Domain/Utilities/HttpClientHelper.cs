@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SpreadsheetEvaluator.Domain.Utilities
 {
@@ -37,11 +34,9 @@ namespace SpreadsheetEvaluator.Domain.Utilities
         {
             try
             {
-                var client = _httpClient;
-                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
 
-                var result = client.PostAsync(url, content).Result;
+                var result = _httpClient.PostAsync(url, content).Result.Content.ReadAsStringAsync();
                 Console.WriteLine("TEST");
             }
             catch(Exception ex)
