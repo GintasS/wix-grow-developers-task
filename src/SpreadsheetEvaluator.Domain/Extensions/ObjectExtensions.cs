@@ -1,5 +1,4 @@
-﻿using SpreadsheetEvaluator.Domain.MathModels;
-using SpreadsheetEvaluator.Domain.Models.Enums;
+﻿using SpreadsheetEvaluator.Domain.Models.Enums;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
 
 namespace SpreadsheetEvaluator.Domain.Extensions
@@ -33,7 +32,7 @@ namespace SpreadsheetEvaluator.Domain.Extensions
             }
             else if (value is bool)
             {
-                return CellType.Bool;
+                return CellType.Boolean;
             }
             else if (value is Formula)
             {
@@ -46,6 +45,5 @@ namespace SpreadsheetEvaluator.Domain.Extensions
 
             return null;
         }
-
     }
 }

@@ -1,6 +1,5 @@
-﻿using SpreadsheetEvaluator.Domain.MathModels;
+﻿using System.Collections.Generic;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
-using System.Collections.Generic;
 
 namespace SpreadsheetEvaluator.Domain.Extensions
 {
@@ -8,9 +7,9 @@ namespace SpreadsheetEvaluator.Domain.Extensions
     {
         public static void ReplaceFormulaReferencesWithValues(this Formula formula, List<Cell> cellRow)
         {
-            foreach (var replacingReference in cellRow)
+            foreach (var cell in cellRow)
             {
-                formula.FormulaText = formula.FormulaText.Replace(replacingReference.Key, replacingReference.Value.Value.ToString());
+                formula.FormulaText = formula.FormulaText.Replace(cell.Key, cell.Value.Value.ToString());
             }
         }
     }

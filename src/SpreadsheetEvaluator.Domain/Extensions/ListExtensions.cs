@@ -1,11 +1,10 @@
-﻿using SpreadsheetEvaluator.Domain.Models.Enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SpreadsheetEvaluator.Domain.Extensions
 {
     public static class ListExtensions
     {
-        public static bool HasUniqueElements(this List<CellType> list)
+        public static bool HasUniqueElements<T>(this List<T> list) where T : struct
         {
             if (list == null || list.Count <= 1)
             {
@@ -15,7 +14,7 @@ namespace SpreadsheetEvaluator.Domain.Extensions
             var firsType = list[0];
             for (var i = 1; i < list.Count; i++)
             {
-                if ((int)list[i] != (int)firsType)
+                if (list[i].Equals(firsType) == false)
                 {
                     return false;
                 }

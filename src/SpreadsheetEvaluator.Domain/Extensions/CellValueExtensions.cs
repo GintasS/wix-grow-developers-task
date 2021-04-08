@@ -1,5 +1,4 @@
-﻿using SpreadsheetEvaluator.Domain.MathModels;
-using SpreadsheetEvaluator.Domain.Models.MathModels;
+﻿using SpreadsheetEvaluator.Domain.Models.MathModels;
 
 namespace SpreadsheetEvaluator.Domain.Extensions
 {
@@ -16,9 +15,9 @@ namespace SpreadsheetEvaluator.Domain.Extensions
             {
                 return new string(cellValue.Value.ToString());
             }
-            else if (cellValue.Value is bool)
+            else if (cellValue.Value is bool boolValue)
             {
-                return (bool)cellValue.Value;
+                return boolValue;
             }
             else if (cellValue.Value is Formula formula)
             {
