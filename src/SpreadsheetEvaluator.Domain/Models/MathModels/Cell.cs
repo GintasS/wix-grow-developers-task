@@ -15,8 +15,6 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
         public object Value { get; private set; }
         public CellType CellType { get; private set; } = CellType.Undefined;
         public bool IsFormulaCell => Value is Formula;
-        public bool IsErrorCell => CellType == CellType.Error;
-        public bool IsCellUndefined => CellType == CellType.Undefined;
 
         public CellValue(object value)
         {
@@ -25,12 +23,14 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
 
         public void UpdateCell<T>(T value) where T : struct
         {
-            if (value.IsNumber())
+            if (value.IsNumber() == false)
             {
-                decimal.TryParse(value.ToString(), out decimal decimalResult);
-                Value = decimalResult;
-                CellType = CellType.Number;
+                return;
             }
+
+            decimal.TryParse(value.ToString(), out var decimalResult);
+            Value = decimalResult;
+            CellType = CellType.Number;
         }
 
         public void UpdateCell(string value)
@@ -53,6 +53,17 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
 
         public void UpdateCell(CellValue cellValue)
         {
+            if (cellValue.IsValidCellValue() == false)
+            {
+                return;
+            }
+
+            if (cellValue.Value is string || cellValue.Value is Formula)
+            {
+                UpdateCell((dynamic)cellValue.Value);
+                return;
+            }
+
             Value = cellValue.Value;
             CellType = cellValue.CellType;
         }

@@ -59,7 +59,7 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
 
         private string GetCellKeyFromIndexes()
         {
-            return ((char)_cellLetterIndex).ToString() + _cellNumberIndex.ToString();
+            return new string((char)_cellLetterIndex + _cellNumberIndex.ToString());
         }
 
         public void IncrementCellIndex()
@@ -70,11 +70,6 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
         public void IncrementLetterIndex()
         {
             _cellLetterIndex++;
-        }
-
-        public void ResetCellIndex()
-        {
-            _cellNumberIndex = 1;
         }
 
         public void ResetLetterIndex()

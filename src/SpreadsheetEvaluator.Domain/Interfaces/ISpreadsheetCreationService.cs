@@ -6,6 +6,6 @@ namespace SpreadsheetEvaluator.Domain.Interfaces
 {
     public interface ISpreadsheetCreationService
     {
-        public List<JobRaw> Create(JobsRawResponse jobsRawResponse);
+        public List<JobRaw> Create(JobsGetRawResponse jobsGetRawResponse);
     }
 }
