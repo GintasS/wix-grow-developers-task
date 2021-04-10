@@ -40,7 +40,7 @@ namespace SpreadsheetEvaluator.Domain.Configuration
             },
             new FormulaOperator
             {
-                JsonName = "not",  // not covered in if statement
+                JsonName = "not",
                 MathSymbol = "NOT",
                 FormulaResultType = FormulaResultType.Boolean
             },
@@ -76,14 +76,14 @@ namespace SpreadsheetEvaluator.Domain.Configuration
             }
         };
 
-        public static readonly List<string> StandardOperatorNames = new List<string>()
+        public static readonly List<string> StandardOperatorNames = new List<string>
         {
             "sum",
             "multiply",
             "divide"
         };
 
-        public static readonly List<string> LogicalOperatorNames = new List<string>()
+        public static readonly List<string> LogicalOperatorNames = new List<string>
         {
             "is_greater",
             "is_equal",
@@ -91,22 +91,6 @@ namespace SpreadsheetEvaluator.Domain.Configuration
             "or",
             "not"
         };
-
-        public struct Formula
-        {
-            public const string Concat = "concat";
-            public const string Not = "not";
-        }
-
-        public struct JobJson
-        {
-            public const string Id = "id";
-            public const string Data = "data";
-            public const string Formula = "formula";
-            public const string Value = "value";
-            public const string IfValue = "if";
-            public const string Reference = "reference";
-        }
 
         public struct Error
         {
@@ -116,6 +100,12 @@ namespace SpreadsheetEvaluator.Domain.Configuration
         public struct HubApi
         {
             public const string PostMediaType = "application/json";
+        }
+
+        public struct ExitMessages
+        {
+            public const string FailedToGetJobs = "Failed to GET jobs from the Hub Api. Message: {0}.";
+            public const string FailedToPostJobs = "Failed to POST jobs to the Hub Api. Message: {0}, Server Response: {1}.";
         }
     }
 }
