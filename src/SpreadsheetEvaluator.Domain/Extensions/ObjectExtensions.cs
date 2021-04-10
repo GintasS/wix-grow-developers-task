@@ -1,5 +1,4 @@
-﻿using SpreadsheetEvaluator.Domain.Models.Enums;
-using SpreadsheetEvaluator.Domain.Models.MathModels;
+﻿using System.Data;
 
 namespace SpreadsheetEvaluator.Domain.Extensions
 {
@@ -20,30 +19,19 @@ namespace SpreadsheetEvaluator.Domain.Extensions
                     || value is decimal;
         }
 
-        public static CellType? TryGetCellTypeFromValue(this object value)
+        public static object CalculateMathExpression(this object valueToCompute)
         {
-            if (value.IsNumber())
+            object returnValue;
+            try
             {
-                return CellType.Number;
+                returnValue = new DataTable().Compute(valueToCompute.ToString(), null);
             }
-            else if (value is string)
+            catch
             {
-                return CellType.Text;
-            }
-            else if (value is bool)
-            {
-                return CellType.Boolean;
-            }
-            else if (value is Formula)
-            {
-                return CellType.Formula;
-            }
-            else if (value is CellValue cellValue)
-            {
-                return cellValue.CellType;
+                returnValue = null;
             }
 
-            return null;
+            return returnValue;
         }
     }
 }

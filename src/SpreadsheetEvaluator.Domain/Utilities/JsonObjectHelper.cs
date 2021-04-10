@@ -42,5 +42,27 @@ namespace SpreadsheetEvaluator.Domain.Utilities
 
             return "";
         }
+
+        public static object GetConcreteValueFromProperty(JProperty property)
+        {
+            if (property.Name == "text")
+            {
+                return property.Value.ToString();
+            }
+            else if (property.Name == "number")
+            {
+                decimal.TryParse(property.Value.ToString(), out decimal decimalValue);
+                return decimalValue;
+            }
+            else if (property.Name == "boolean")
+            {
+                bool.TryParse(property.Value.ToString(), out bool booleanValue);
+                return booleanValue;
+            }
+
+            return null;
+        }
+
+
     }
 }

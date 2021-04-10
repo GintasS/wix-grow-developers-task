@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text;
+using SpreadsheetEvaluator.Domain.Configuration;
 
 namespace SpreadsheetEvaluator.Domain.Utilities
 {
     public class HttpClientHelper
     {
         private HttpClient _httpClient;
+
         public HttpClientHelper(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -14,37 +16,28 @@ namespace SpreadsheetEvaluator.Domain.Utilities
 
         public string GetStringContentFromUrl(string url) 
         {
-            String content = null;
             try
             {
-                var client = _httpClient;
-
-                var result = client.GetAsync(url);
-                content = result.Result.Content.ReadAsStringAsync().Result;
-            }
-            catch
+                var result = _httpClient.GetAsync(url);
+                return result.Result.Content.ReadAsStringAsync().Result;
+            } 
+            catch(Exception ex)
             {
-                // TODO: catch exceptions and HTTP response codes
+                throw ex;
             }
-
-            return content;
         }
 
         public void PostStringContentToUrl(string url, string payload)
         {
             try
             {
-                var content = new StringContent(payload, Encoding.UTF8, "application/json");
-
+                var content = new StringContent(payload, Encoding.UTF8, Constants.HubApi.PostMediaType);
                 var result = _httpClient.PostAsync(url, content).Result.Content.ReadAsStringAsync();
-                Console.WriteLine("TEST");
             }
             catch(Exception ex)
             {
-                // TODO: catch exceptions and HTTP response codes
+                throw ex;
             }
         }
-
-
     }
 }
