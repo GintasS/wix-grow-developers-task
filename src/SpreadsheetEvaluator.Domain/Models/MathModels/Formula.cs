@@ -4,7 +4,7 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
 {
     public class Formula
     {
-        public string FormulaText { get; set; }
+        public string Text { get; set; }
         public FormulaOperator FormulaOperator { get; set; }
 
         public Formula()
@@ -14,7 +14,7 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
 
         public Formula(Formula formula)
         {
-            FormulaText = new string(formula.FormulaText);
+            Text = new string(formula.Text);
             FormulaOperator = formula.FormulaOperator;
         }
     }

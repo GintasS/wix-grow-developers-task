@@ -2,7 +2,7 @@
 
 namespace SpreadsheetEvaluator.Domain.Models.MathModels
 {
-    public class ComputedJob
+    public class JobComputed
     {
         public string Id { get; set; }
         public List<List<Cell>> Cells { get; set; }
