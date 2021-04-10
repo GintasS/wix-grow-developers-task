@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using SpreadsheetEvaluator.Domain.Models.MathModels;
 
 namespace SpreadsheetEvaluator.Domain.Extensions
 {
@@ -17,6 +18,16 @@ namespace SpreadsheetEvaluator.Domain.Extensions
                     || value is float
                     || value is double
                     || value is decimal;
+        }
+
+        public static bool IsValidCellValue(this object value)
+        {
+            return value.IsNumber()
+                   || value is string
+                   || value is bool
+                   || value is Formula
+                   || value is CellValue;
+
         }
 
         public static object CalculateMathExpression(this object valueToCompute)
