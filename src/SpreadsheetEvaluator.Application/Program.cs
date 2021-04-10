@@ -11,31 +11,33 @@ namespace SpreadsheetEvaluator.Application
     {
         static void Main(string[] args)
         {
-            // Fetching services.
+            // Initialize DI.
             var serviceProvider = Startup.InitServiceProvider();
+            
+            // Get all the necessary services, helpers.
             var hubService = serviceProvider.GetService<IHubService>();
             var formulaEvaluatorService = serviceProvider.GetService<IFormulaEvaluatorService>();
             var spreadsheetCreationService = serviceProvider.GetService<ISpreadsheetCreationService>();
-            var jsonHelper = serviceProvider.GetService<JsonHelper>();
+            var jobsPostRequestHelper = serviceProvider.GetService<JobsPostRequestHelper>();
 
-            // Get Raw Json string from Hub API.
-            var rawJson = hubService.GetJobs();
+            // Get Jobs from the Hub Api.
+            var json = hubService.GetJobs();
 
             // Parse Json string to object.
-            var parsedJsonObject = JsonConvert.DeserializeObject<JobsRawResponse>(rawJson);
+            var jobsRawResponse = JsonConvert.DeserializeObject<JobsRawResponse>(json);
 
-            // Parse Json object to jobs.
-            var parsedJobs = spreadsheetCreationService.Create(parsedJsonObject);
+            // Parse Json object to actual jobs list we can use.
+            var createdJobs = spreadsheetCreationService.Create(jobsRawResponse);
 
-            // Compute formulas
-            var computedJobs = formulaEvaluatorService.ComputeFormulas(parsedJobs);
+            // Compute formulas for cells.
+            var computedJobs = formulaEvaluatorService.ComputeFormulas(createdJobs);
 
-            // Get object to serialize.
-            var serializedResponse = jsonHelper.SerializeJobs(computedJobs);
+            // Create a post request to send to the Hub Api.
+            var jobsPostRequest = jobsPostRequestHelper.CreatePostRequest(computedJobs);
 
-            // Serialize payload and send to Post API.
+            // Serialize the payload.
             var payload = JsonConvert.SerializeObject(
-                serializedResponse,
+                jobsPostRequest,
                 Formatting.Indented,
                 new JsonSerializerSettings
                 {
@@ -43,7 +45,8 @@ namespace SpreadsheetEvaluator.Application
                 }
             );
 
-            hubService.PostJobs(parsedJsonObject.SubmissionUrl, payload);
+            // Send the payload to the Hub Api.
+            hubService.PostJobs(jobsRawResponse.SubmissionUrl, payload);
         }
     }
 }
