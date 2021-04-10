@@ -4,7 +4,6 @@ using SpreadsheetEvaluator.Domain.Interfaces;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
 using SpreadsheetEvaluator.Domain.Models.Responses;
 using SpreadsheetEvaluator.Domain.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,275 +12,147 @@ namespace SpreadsheetEvaluator.Domain.Services
     // TODO: We may not catch constant values (now we are picking references nicely).
     // TODO: Make this parser more robust
     // TODO: Clean up code using suggestions from VS
-    // TODO: Better naming for everything almost
     // TODO: Tests
-    // TODO: Move code out of this and other classes
     // TODO: Find edge cases to break your code
-    // TODO: Remove unused files
-    // TODO: Move hard-coded values to constants
-    // TODO: add gitignore to prevent .exe and dlls to be included into the project
-    // TODO: add necessary comments, especially in the recursive part.
     // TODO: Validation everywhere
-    // TODO: Remove unused includes
     // TODO: Add something to changelog.
     // TODO: Exception handling where needed
     // TODO: If formula comes first, things can break and we will not save value.
-
+    // TODO: Run Resharper - Inspection - and fix spots.
     public class SpreadsheetCreationService : ISpreadsheetCreationService
     {
-        public List<SingleJob> Create(JobsRawResponse jobsRawResponse)
+        public List<JobRaw> Create(JobsRawResponse jobsRawResponse)
         {
-            var createdJobs = new List<SingleJob>();
-            foreach (var value in jobsRawResponse.Jobs.Values.Children())
+            var createdJobs = new List<JobRaw>();
+            var jobNodes = jobsRawResponse.Jobs.Values.Children();
+            foreach (var jobNode in jobNodes)
             {
-                var ret = RecursiveIteration(value, new SingleJob());
-                createdJobs.Add(ret);
+                var createdSingleJob = ReadTokensRecursively(jobNode, new JobRaw());
+                createdJobs.Add(createdSingleJob);
             }
 
             return createdJobs;
         }
 
-        private SingleJob RecursiveIteration(IEnumerable<JToken> tokens, SingleJob singleJob)
+        private JobRaw ReadTokensRecursively(IEnumerable<JToken> tokens, JobRaw jobRaw)
         {
             foreach (var token in tokens)
             {
-                Console.WriteLine(" CHILDREN: " + token.ToString());
+                // We are at the 1 below root, aka, on on the individual job.
 
-                // We are at the 1 below root, aka, on on the individual job
-                if (token is JProperty jProperty && jProperty.Name == "id")
+                // Get Job Id here.
+                if (token is JProperty jobIdProperty && jobIdProperty.Name == Constants.JobJson.Id)
                 {
-                    singleJob.Id = jProperty.Value.ToString();
+                    jobRaw.Id = jobIdProperty.Value.ToString();
                 }
-                else if (token?.Parent != null && token?.Parent is JProperty jProperty1 && jProperty1.Name == "data" && singleJob.IteratingOverDataArray == false)
+                else if (token?.Parent != null && token?.Parent is JProperty dataArrayProperty && dataArrayProperty.Name == Constants.JobJson.Data && jobRaw.IteratingOverDataArray == false)
                 {
-                    singleJob.IteratingOverDataArray = true;
+                    // In this place, we say that we have found our data array.
+                    jobRaw.IteratingOverDataArray = true;
                 }
 
-                if (singleJob.IteratingOverDataArray)
+                // In this block we are going both save values and formulas.
+                if (jobRaw.IteratingOverDataArray)
                 {
+                    // Detect multidimensional array.
                     if (token is JArray && token?.Parent is JArray && token.Parent.Count > 1)
                     {
-                        if (singleJob.IsMultiArray == false && token.Parent.Count > 1)
+                        if (jobRaw.IsMultiArray == false && token.Parent.Count > 1)
                         {
-                            singleJob.IsMultiArray = true;
+                            jobRaw.IsMultiArray = true;
                         }
-                        else if (singleJob.IsMultiArray)
+                        else if (jobRaw.IsMultiArray)
                         {
-                            singleJob.ResetLetterIndex();
-                            singleJob.IncrementCellIndex();
+                            jobRaw.ResetLetterIndex();
+                            jobRaw.IncrementCellIndex();
                         }
-
-                        singleJob.IteratingOverInsideArray = true;
                     }
 
-                    if (token is JObject formulaObject && formulaObject.ContainsKey("formula") && singleJob.IsInFormulaObject == false)
+                    // In this place, we say that we have found formula object.
+                    if (token is JObject formulaObject && formulaObject.ContainsKey(Constants.JobJson.Formula) && jobRaw.IsInFormulaObject == false)
                     {
-                        // Check for operator existence here.
-
-                        singleJob.IsInFormulaObject = true;
+                        jobRaw.IsInFormulaObject = true;
                     }
 
-                    if (singleJob.Id == "job-18")
+                    if (token is JProperty && token?.Parent is JObject firtValuePropertyParent && firtValuePropertyParent.ContainsKey(Constants.JobJson.Value))
                     {
-                        Console.WriteLine("A");
+                        jobRaw.FoundValue = true;
                     }
-
-
-
-
-
-                    if (token is JProperty valueObject333 && token?.Parent is JObject jjj && jjj.ContainsKey("value"))
+                    else if (token is JProperty valueProperty && jobRaw.FoundValue)
                     {
-                        singleJob.FoundValue = true;
-                    }
-                    else if (token is JProperty valueObject && singleJob.FoundValue)
-                    {
-                        var t = valueObject.AncestorsAndSelf()
-                                               .OfType<JObject>()
-                                               .Any(n => n.ContainsKey("formula"));
+                        // Get simple values here.
 
-                        if (t == false)
+                        var isInsideFormulaObject = valueProperty.AncestorsAndSelf()
+                            .OfType<JObject>()
+                            .Any(n => n.ContainsKey(Constants.JobJson.Formula));
+
+                        if (isInsideFormulaObject == false)
                         {
-                            Cell cell = new Cell
+                            var concreteValue = JsonObjectHelper.GetConcreteValueFromProperty(valueProperty);
+
+                            if (concreteValue != null)
                             {
-                                Value = null
-                            };
- 
-                            if (valueObject.Name == "text")
-                            {
-                                cell.Value = new CellValue(valueObject.Value.ToString());
+                                jobRaw.SetCellValue(concreteValue);
+                                jobRaw.FoundValue = false;
                             }
-                            else if (valueObject.Name == "number")
-                            {
-                                Decimal.TryParse(valueObject.Value.ToString(), out decimal decimalValue);
-                                cell.Value = new CellValue(decimalValue);
-                            }
-                            else if (valueObject.Name == "boolean")
-                            {
-                                bool.TryParse(valueObject.Value.ToString(), out bool booleanValue);
-                                cell.Value = new CellValue(booleanValue);
-                            }
-
-                            singleJob.SetReferenceToValue(cell);
-                            singleJob.FoundValue = false;
-                            singleJob.HaveEverSeenValue = true;
                         }
                     }
-                    else if (token is JProperty formulaPropety && singleJob.IsInFormulaObject)
+                    else if (token is JProperty formulaProperty && jobRaw.IsInFormulaObject)
                     {
-                        if (formulaPropety.Name == "if" && singleJob.FoundIfFormula == false)
+                        if (formulaProperty.Name == Constants.JobJson.IfValue && jobRaw.FoundIfFormula == false)
                         {
-                            singleJob.FoundIfFormula = true;
+                            jobRaw.FoundIfFormula = true;
                         }
-
-
-
-                        // Finish here.
-
-                        // is_greater, is_equal, not, and, or
-
-                        // Formulas
-
                     }
 
-
-                    if (singleJob.IsInFormulaObject)
+                    // Get formulas here.
+                    if (jobRaw.IsInFormulaObject)
                     {
-                        if (token is JArray ifObject && ifObject.Count == 3 && singleJob.FoundIfFormula)
+                        if (token is JArray ifObjectArray && ifObjectArray.Count == 3 && jobRaw.FoundIfFormula)
                         {
-                            var firstIfObject = ifObject[0] as JObject;
-                            var secondIfObject = ifObject[1] as JObject;
-                            var thirdIfObject = ifObject[2] as JObject;
-
-                            var formulaOperator = Constants.FormulaOperators.Single(x => firstIfObject.ContainsKey(x.JsonName));
-
-                            var elements = firstIfObject[formulaOperator.JsonName] as JArray;
-                            var expr = "IIF(" + ParseFormulaReferences(elements, formulaOperator) + "," + secondIfObject["reference"] + "," + thirdIfObject["reference"] + ")";
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
+                            var ifFormula = FormulaHelper.CreateIfFormula(ifObjectArray);
+                            jobRaw.SetCellValue(ifFormula);
                         }
-                        else if (token is JProperty sumFormulaObject && sumFormulaObject.Name == "sum")
+                        else if (token is JProperty concatFormulaProperty && concatFormulaProperty.Name == Constants.Formula.Concat && jobRaw.FoundIfFormula == false)
                         {
-                            var sumArray = sumFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => sumFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
+                            var concatFormula = FormulaHelper.CreateStandardFormula(concatFormulaProperty);
+                            jobRaw.SetCellValue(concatFormula);
                         }
-                        else if (token is JProperty multiplyFormulaObject && multiplyFormulaObject.Name == "multiply")
+                        else if (token is JProperty standardFormulaProperty && Constants.StandardOperatorNames.Exists(x => x.Equals(standardFormulaProperty.Name)))
                         {
-                            var sumArray = multiplyFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => multiplyFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
+                            var standardFormula = FormulaHelper.CreateStandardFormula(standardFormulaProperty);
+                            jobRaw.SetCellValue(standardFormula);
                         }
-                        else if (token is JProperty divideFormulaObject && divideFormulaObject.Name == "divide")
+                        else if (token is JProperty notFormulaProperty && notFormulaProperty.Name == Constants.Formula.Not && jobRaw.FoundIfFormula == false)
                         {
-                            var sumArray = divideFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => divideFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
+                            var notFormula = FormulaHelper.CreateNotOperatorFormula(notFormulaProperty);
+                            jobRaw.SetCellValue(notFormula);
                         }
-                        else if (token is JProperty isGreaterFormulaObject && isGreaterFormulaObject.Name == "is_greater" && singleJob.FoundIfFormula == false)
+                        else if (token is JProperty logicalFormulaProperty && Constants.LogicalOperatorNames.Exists(x => x.Equals(logicalFormulaProperty.Name)) && jobRaw.FoundIfFormula == false)
                         {
-                            var sumArray = isGreaterFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => isGreaterFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
+                            var logicalFormula = FormulaHelper.CreateLogicalOperatorsFormula(logicalFormulaProperty);
+                            jobRaw.SetCellValue(logicalFormula);
                         }
-                        else if (token is JProperty isEqualFormulaObject && isEqualFormulaObject.Name == "is_equal" && singleJob.FoundIfFormula == false)
+                        else if (token is JObject formulaReferenceTypeObject && formulaReferenceTypeObject.ContainsKey(Constants.JobJson.Formula) && formulaReferenceTypeObject[Constants.JobJson.Formula][Constants.JobJson.Reference] != null)
                         {
-                            var sumArray = isEqualFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => isEqualFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
-                        }
-                        else if (token is JProperty notFormulaObject && notFormulaObject.Name == "not" && singleJob.FoundIfFormula == false)
-                        {
-                            var formulaOperator = Constants.FormulaOperators.Single(x => notFormulaObject.Name.Equals(x.JsonName));
-                            singleJob.SetFormula(new Formula { FormulaText = "NOT " + JsonObjectHelper.GetValueOfAnyType(notFormulaObject), FormulaOperator = formulaOperator });
-                        }
-                        else if (token is JProperty andFormulaObject && andFormulaObject.Name == "and" && singleJob.FoundIfFormula == false)
-                        {
-                            var sumArray = andFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => andFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
-                        }
-                        else if (token is JProperty orFormulaObject && orFormulaObject.Name == "or" && singleJob.FoundIfFormula == false)
-                        {
-                            var sumArray = orFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => orFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
-                        }
-                        else if (token is JProperty concatFormulaObject && concatFormulaObject.Name == "concat" && singleJob.FoundIfFormula == false)
-                        {
-                            var sumArray = concatFormulaObject.Value as JArray;
-                            var formulaOperator = Constants.FormulaOperators.Single(x => concatFormulaObject.Name.Equals(x.JsonName));
-                            var expr = ParseFormulaReferences(sumArray, formulaOperator);
-
-                            singleJob.SetFormula(new Formula { FormulaText = expr, FormulaOperator = formulaOperator });
-                        }
-                        else if (token is JObject emptyFormulaFieldOnlyReferenceObject && emptyFormulaFieldOnlyReferenceObject.ContainsKey("formula") && emptyFormulaFieldOnlyReferenceObject.ContainsKey("formula") && emptyFormulaFieldOnlyReferenceObject["formula"]["reference"] != null)
-                        {
-                            singleJob.SetFormula(new Formula { FormulaText = emptyFormulaFieldOnlyReferenceObject["formula"]["reference"].ToString(), FormulaOperator = Constants.FormulaOperators[10] });
+                            var referenceFormula = FormulaHelper.CreateReferenceFormula(formulaReferenceTypeObject);
+                            jobRaw.SetCellValue(referenceFormula);
                         }
                     }
                 }
-
 
                 if (token.Children().Count() != 0)
                 {
-                    RecursiveIteration(token.Children(), singleJob);
+                    ReadTokensRecursively(token.Children(), jobRaw);
                 }
                 else
                 {
-                    Console.WriteLine("WE ARE AT THE END: ");
-                    singleJob.FoundIfFormula = false;
-                    singleJob.IsInFormulaObject = false;
+                    jobRaw.FoundIfFormula = false;
+                    jobRaw.IsInFormulaObject = false;
                 }
-
             }
-            Console.WriteLine("-----------------------------\n\n\n\n\n");
-
-            return singleJob;
-        }
-
-        private string ParseFormulaReferences(JArray elements, FormulaOperator formulaOperator)
-        {
-            var expr = "";
-            for (var i = 0; i < elements.Count; i++)
-            {
-
-                if (elements[i]["reference"] != null)
-                {
-                    expr += elements[i]["reference"];
-                    
-                }
-                else if (elements[i]["value"] != null)
-                {
-                    var jsonObject = elements[i]["value"] as JObject;
-
-                    expr += JsonObjectHelper.GetValueOfAnyType(jsonObject);
-                }
-
-                if (i + 1 < elements.Count)
-                {
-                    if (string.IsNullOrEmpty(formulaOperator.MathSymbol) == false)
-                    {
-                        expr += " " + formulaOperator.MathSymbol + " ";
-                    }
-                }
-                
-            }
-            return expr;
+            
+            return jobRaw;
         }
     }
 }

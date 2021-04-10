@@ -1,107 +1,107 @@
-﻿using Microsoft.Extensions.Options;
-using SpreadsheetEvaluator.Domain.Configuration;
-using SpreadsheetEvaluator.Domain.Extensions;
+﻿using SpreadsheetEvaluator.Domain.Extensions;
 using SpreadsheetEvaluator.Domain.Interfaces;
 using SpreadsheetEvaluator.Domain.Models.Enums;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
-using System;
+using SpreadsheetEvaluator.Domain.Utilities;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 
 namespace SpreadsheetEvaluator.Domain.Services
 {
     public class FormulaEvaluatorService : IFormulaEvaluatorService
     {
-        private readonly ApplicationSettings _applicationSettings;
-        
-        public FormulaEvaluatorService(IOptionsMonitor<ApplicationSettings> configuration)
+        public List<JobComputed> ComputeFormulas(List<JobRaw> jobsList)
         {
-            _applicationSettings = configuration.CurrentValue;
-        }
-
-        public List<ComputedJob> ComputeFormulas(List<SingleJob> jobsList)
-        {
-            var computedJobs = jobsList.Select(x => new ComputedJob {
+            // Map our singleJobs to computed jobs,
+            // to not change passed data directly and remove unused properties.
+            var computedJobs = jobsList.Select(x => new JobComputed {
                 Id = x.Id,
                 Cells = x.Cells
             }).ToList();
 
-            for(var jobIndex = 0; jobIndex < computedJobs.Count; jobIndex++)
+            foreach(var job in computedJobs)
             {
                 /*
                 var isCellRowInvertedNormalCellLastIndex = jobs[jobIndex].Cells.SelectMany(x => x).FirstOrDefault(x => x.Value.CellType != CellType.Formula);
                 var isCellRowInvertedFormulaCellFirstIndex = jobs[jobIndex].Cells.FindIndex(x => x.Value.CellType == CellType.Formula);
                 */
 
-                for (var cellRowIndex = 0; cellRowIndex < computedJobs[jobIndex].Cells.Count; cellRowIndex++)
+                foreach (var cellRow in job.Cells)
                 {
-                    var cellRow = computedJobs[jobIndex].Cells[cellRowIndex];
-
-                    var isCellRowInvertedNormalCellLastIndex = computedJobs[jobIndex].Cells[cellRowIndex].FindLastIndex(x => x.Value.CellType != CellType.Formula);
-                    var isCellRowInvertedFormulaCellFirstIndex = computedJobs[jobIndex].Cells[cellRowIndex].FindIndex(x => x.Value.CellType == CellType.Formula);
+                    // Reverse cellRow if the value is at the end and formulas are at the start.
+                    var isCellRowInvertedNormalCellLastIndex = cellRow.FindLastIndex(x => x.Value.CellType != CellType.Formula);
+                    var isCellRowInvertedFormulaCellFirstIndex = cellRow.FindIndex(x => x.Value.CellType == CellType.Formula);
 
                     if (isCellRowInvertedNormalCellLastIndex > isCellRowInvertedFormulaCellFirstIndex)
                     {
-                        computedJobs[jobIndex].Cells[cellRowIndex].Reverse();
+                        cellRow.Reverse();
                     }
 
-                    for (var cellIndex = 0; cellIndex < computedJobs[jobIndex].Cells[cellRowIndex].Count(); cellIndex++)
+                    foreach (var individualCell in cellRow)
                     {
-                        var individualCell = computedJobs[jobIndex].Cells[cellRowIndex][cellIndex];
-
                         if (individualCell.Value.Value is Formula formula) 
                         {
+                            // If the formula of a reference type, find a value that this refernce points to.
                             if (formula.FormulaOperator.FormulaResultType == FormulaResultType.Reference)
                             {
-                                var referencedCell = computedJobs[jobIndex].Cells.SelectMany(x => x).FirstOrDefault(x => x.Key == formula.FormulaText);
+                                var referencedCell = job.Cells.SelectMany(x => x)
+                                    .FirstOrDefault(x => x.Key == formula.Text);
 
                                 if (referencedCell != null)
                                 {
-                                    individualCell.Value.TryUpdateCell(referencedCell.Value);
+                                    individualCell.Value.UpdateCell(referencedCell.Value);
                                 }
                             }
                             else
                             {
-                                // Replacing References with values from the cells.
-
+                                // Filter cells without formulas.
                                 var cellsWithoutFormulas = cellRow.Where(x => x.Value.IsFormulaCell == false)
                                     .ToList();
 
-                                var hasUniqueElements = cellsWithoutFormulas.Where(x => formula.FormulaText.IndexOf(x.Key) >= 0)
+                                // Check if our values that are not yet replaced in the formula ("A1 + B1")
+                                // are of a mismatching type.
+                                var hasMismatchingElements = cellsWithoutFormulas.Where(x => formula.Text.IndexOf(x.Key) >= 0)
                                     .Select(x => x.Value.CellType)
                                     .ToList()
-                                    .HasUniqueElements();
+                                    .HasUniqueElements() == false;
 
-                                formula.ReplaceFormulaReferencesWithValues(cellsWithoutFormulas);
-                                individualCell.Value.TryUpdateCell(formula.FormulaText);
-
-                                var computationResult = individualCell.Value.Value;
-                                try
-                                {
-                                    if (formula.FormulaOperator.FormulaResultType != FormulaResultType.Text)
-                                    {
-                                        computationResult = new DataTable().Compute(computationResult.ToString(), null);
-                                    }
-
-                                    if (hasUniqueElements == false)
-                                    {
-                                        throw new Exception();
-                                    }
-                                }
-                                catch
+                                if (hasMismatchingElements)
                                 {
                                     individualCell.Value.SetCellAsErrorCell();
                                     continue;
                                 }
 
-                                individualCell.Value.TryUpdateCell(computationResult);
+                                // Replace references in the formula.
+                                // E.g "A1 + B1" is going to be "5 + 4" after this method execution.
+                                var mathExpressionText = CalculationHelper.ReplaceFormulaReferencesWithValues(formula.Text, cellsWithoutFormulas);
+                                
+                                // Replace cell's value with the math expression, which is a string currently.
+                                individualCell.Value.UpdateCell(mathExpressionText);
+
+                                // Compute math expression.
+                                // Do not compute value for formula with a string type,
+                                // because we will get an exception.
+
+                                object computationResult = individualCell.Value.Value;
+                                if (formula.FormulaOperator.FormulaResultType != FormulaResultType.Text)
+                                {
+                                    computationResult = computationResult.CalculateMathExpression();
+                                }
+
+                                // If we got a null, set this cell as an error cell.
+                                if (computationResult == null)
+                                {
+                                    individualCell.Value.SetCellAsErrorCell();
+                                    continue;
+                                }
+
+                                // Update the cell with the computed value.
+                                individualCell.Value.UpdateCell((dynamic)computationResult);
                             }
                         }
                     }                 
                 } 
             }
-
             return computedJobs;
         }
     }

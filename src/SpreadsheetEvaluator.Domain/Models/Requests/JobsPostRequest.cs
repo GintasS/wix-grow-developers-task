@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using SpreadsheetEvaluator.Domain.Models.Enums;
+using SpreadsheetEvaluator.Domain.Models.MathModels;
 
 namespace SpreadsheetEvaluator.Domain.Models.Requests
 {
@@ -31,13 +33,39 @@ namespace SpreadsheetEvaluator.Domain.Models.Requests
         public Values Values { get; set; }
 
         [JsonProperty("error")]
-        public string error { get; set; }
+        public string Error { get; set; }
+
+        public JobsPostValueModel(CellValue cellValue)
+        {
+            Values = new Values();
+
+            if (cellValue.CellType == CellType.Number)
+            {
+                Values.Number = (decimal)cellValue.Value;
+            }
+            else if (cellValue.CellType == CellType.Text)
+            {
+                Values.Text = cellValue.Value.ToString();
+            }
+            else if (cellValue.CellType == CellType.Boolean)
+            {
+                Values.Boolean = (bool)cellValue.Value;
+            }
+            else if (cellValue.IsErrorCell)
+            {
+                Error = cellValue.Value.ToString();
+                Values = null;
+            }
+        }
     }
 
     public class Values
     {
-        public bool? boolean { get; set; }
-        public decimal? number { get; set; }
-        public string text { get; set; }
+        [JsonProperty("boolean")]
+        public bool? Boolean { get; set; }
+        [JsonProperty("number")]
+        public decimal? Number { get; set; }
+        [JsonProperty("text")]
+        public string Text { get; set; }
     }
 }

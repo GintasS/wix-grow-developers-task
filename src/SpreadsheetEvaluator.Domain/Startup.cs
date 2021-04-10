@@ -29,7 +29,7 @@ namespace SpreadsheetEvaluator.Domain
             serviceCollection.AddScoped<ISpreadsheetCreationService, SpreadsheetCreationService>();
             serviceCollection.AddHttpClient<HttpClientHelper>();
             serviceCollection.AddSingleton<HttpClientHelper>();
-            serviceCollection.AddSingleton<JsonHelper>();
+            serviceCollection.AddSingleton<JobsPostRequestHelper>();
 
         }
 
