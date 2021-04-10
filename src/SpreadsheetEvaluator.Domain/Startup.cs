@@ -6,6 +6,7 @@ using SpreadsheetEvaluator.Domain.Services;
 using SpreadsheetEvaluator.Domain.Utilities;
 using System;
 using System.IO;
+using System.Net.Http;
 
 namespace SpreadsheetEvaluator.Domain
 {
@@ -27,10 +28,8 @@ namespace SpreadsheetEvaluator.Domain
             serviceCollection.AddScoped<IHubService, HubService>();
             serviceCollection.AddScoped<IFormulaEvaluatorService, FormulaEvaluatorService>();
             serviceCollection.AddScoped<ISpreadsheetCreationService, SpreadsheetCreationService>();
-            serviceCollection.AddHttpClient<HttpClientHelper>();
-            serviceCollection.AddSingleton<HttpClientHelper>();
+            serviceCollection.AddSingleton<HttpClient>();
             serviceCollection.AddSingleton<JobsPostRequestHelper>();
-
         }
 
         private static void ConfigureDefaultApplicationSettings(IServiceCollection serviceCollection)
