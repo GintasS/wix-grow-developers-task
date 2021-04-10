@@ -1,8 +1,10 @@
-﻿namespace SpreadsheetEvaluator.Domain.Interfaces
+﻿using System.Net.Http;
+
+namespace SpreadsheetEvaluator.Domain.Interfaces
 {
     public interface IHubService
     {
-        public string GetJobs();
-        public void PostJobs(string submissionUrl, string payload);
+        public HttpResponseMessage GetJobs();
+        public HttpResponseMessage PostJobs(string submissionUrl, string payload);
     }
 }
