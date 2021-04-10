@@ -6,7 +6,7 @@ namespace SpreadsheetEvaluator.Domain.Configuration
 {
     public class Constants
     {
-        public static List<FormulaOperator> FormulaOperators = new List<FormulaOperator> 
+        public static readonly List<FormulaOperator> FormulaOperators = new List<FormulaOperator> 
         {
             new FormulaOperator
             {
@@ -75,5 +75,47 @@ namespace SpreadsheetEvaluator.Domain.Configuration
                 FormulaResultType = FormulaResultType.Reference
             }
         };
+
+        public static readonly List<string> StandardOperatorNames = new List<string>()
+        {
+            "sum",
+            "multiply",
+            "divide"
+        };
+
+        public static readonly List<string> LogicalOperatorNames = new List<string>()
+        {
+            "is_greater",
+            "is_equal",
+            "and",
+            "or",
+            "not"
+        };
+
+        public struct Formula
+        {
+            public const string Concat = "concat";
+            public const string Not = "not";
+        }
+
+        public struct JobJson
+        {
+            public const string Id = "id";
+            public const string Data = "data";
+            public const string Formula = "formula";
+            public const string Value = "value";
+            public const string IfValue = "if";
+            public const string Reference = "reference";
+        }
+
+        public struct Error
+        {
+            public const string MismatchingTypes = "type does not match";
+        }
+
+        public struct HubApi
+        {
+            public const string PostMediaType = "application/json";
+        }
     }
 }
