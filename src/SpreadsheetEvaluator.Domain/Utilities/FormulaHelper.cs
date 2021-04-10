@@ -13,9 +13,19 @@ namespace SpreadsheetEvaluator.Domain.Utilities
             var secondIfObject = ifObjectArray[1] as JObject;
             var thirdIfObject = ifObjectArray[2] as JObject;
 
-            var formulaOperator = Constants.FormulaOperators.Single(x => firstIfObject.ContainsKey(x.JsonName));
+            if (firstIfObject == null || secondIfObject == null || thirdIfObject == null)
+            {
+                return null;
+            }
 
+            var formulaOperator = Constants.FormulaOperators.Single(x => firstIfObject.ContainsKey(x.JsonName));
             var elements = firstIfObject[formulaOperator.JsonName] as JArray;
+
+            if (elements == null || secondIfObject["reference"] == null || thirdIfObject["reference"] == null)
+            {
+                return null;
+            }
+
             var expr = $"IIF({TryParseFormulaReferences(elements, formulaOperator)},{secondIfObject["reference"]},{thirdIfObject["reference"]})";
 
             return new Formula
@@ -27,9 +37,15 @@ namespace SpreadsheetEvaluator.Domain.Utilities
 
         public static Formula CreateReferenceFormula(JObject formulaReferenceTypeObject)
         {
+            if (formulaReferenceTypeObject.ContainsKey("formula") == false ||
+                formulaReferenceTypeObject["formula"]["reference"] == null)
+            {
+                return null;
+            }
+
             return new Formula
             {
-                Text = formulaReferenceTypeObject[Constants.JobJson.Formula][Constants.JobJson.Reference].ToString(),
+                Text = formulaReferenceTypeObject["formula"]["reference"].ToString(),
                 FormulaOperator = Constants.FormulaOperators[10]
             };
         }
@@ -72,13 +88,13 @@ namespace SpreadsheetEvaluator.Domain.Utilities
             var expr = string.Empty;
             for (var i = 0; i < elements.Count; i++)
             {
-                if (elements[i][Constants.JobJson.Reference] != null)
+                if (elements[i]["reference"] != null)
                 {
-                    expr += elements[i][Constants.JobJson.Reference];
+                    expr += elements[i]["reference"];
                 }
-                else if (elements[i][Constants.JobJson.Value] != null)
+                else if (elements[i]["value"] != null)
                 {
-                    var jsonObject = elements[i][Constants.JobJson.Value] as JObject;
+                    var jsonObject = elements[i]["value"] as JObject;
                     expr += JsonObjectHelper.GetValueOfAnyType(jsonObject);
                 }
 
