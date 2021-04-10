@@ -1,29 +1,34 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Net.Http;
+using System.Text;
+using Microsoft.Extensions.Options;
 using SpreadsheetEvaluator.Domain.Configuration;
 using SpreadsheetEvaluator.Domain.Interfaces;
-using SpreadsheetEvaluator.Domain.Utilities;
 
 namespace SpreadsheetEvaluator.Domain.Services
 {
     public class HubService : IHubService
     {
         private readonly ApplicationSettings _applicationSettings;
-        private readonly HttpClientHelper _httpClientHelper;
+        private readonly HttpClient _httpClient;
 
-        public HubService(IOptionsMonitor<ApplicationSettings> configuration, HttpClientHelper httpClientHelper)
+        public HubService(IOptionsMonitor<ApplicationSettings> configuration, HttpClient httpClient)
         {
             _applicationSettings = configuration.CurrentValue;
-            _httpClientHelper = httpClientHelper;
+            _httpClient = httpClient;
         }
 
-        public string GetJobs()
+        public HttpResponseMessage GetJobs()
         {
-            return _httpClientHelper.GetStringContentFromUrl(_applicationSettings.HubApiUrlGetJobs);
+            var httpResponse = _httpClient.GetAsync(_applicationSettings.HubApiUrlGetJobs).Result;
+            httpResponse.EnsureSuccessStatusCode();
+
+            return httpResponse;
         }
 
-        public void PostJobs(string submissionUrl, string payload)
+        public HttpResponseMessage PostJobs(string submissionUrl, string payload)
         {
-            _httpClientHelper.PostStringContentToUrl(submissionUrl, payload);
+            var content = new StringContent(payload, Encoding.UTF8, Constants.HubApi.PostMediaType);
+            return _httpClient.PostAsync(submissionUrl, content).Result;
         }
     }
 }

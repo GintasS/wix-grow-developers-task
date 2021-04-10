@@ -21,10 +21,11 @@ namespace SpreadsheetEvaluator.Domain.Services
     // TODO: Run Resharper - Inspection - and fix spots.
     public class SpreadsheetCreationService : ISpreadsheetCreationService
     {
-        public List<JobRaw> Create(JobsRawResponse jobsRawResponse)
+        public List<JobRaw> Create(JobsGetRawResponse jobsGetRawResponse)
         {
             var createdJobs = new List<JobRaw>();
-            var jobNodes = jobsRawResponse.Jobs.Values.Children();
+            var jobNodes = jobsGetRawResponse.Jobs.Values.Children();
+
             foreach (var jobNode in jobNodes)
             {
                 var createdSingleJob = ReadTokensRecursively(jobNode, new JobRaw());
@@ -41,11 +42,11 @@ namespace SpreadsheetEvaluator.Domain.Services
                 // We are at the 1 below root, aka, on on the individual job.
 
                 // Get Job Id here.
-                if (token is JProperty jobIdProperty && jobIdProperty.Name == Constants.JobJson.Id)
+                if (token is JProperty jobIdProperty && jobIdProperty.Name == "id")
                 {
                     jobRaw.Id = jobIdProperty.Value.ToString();
                 }
-                else if (token?.Parent != null && token?.Parent is JProperty dataArrayProperty && dataArrayProperty.Name == Constants.JobJson.Data && jobRaw.IteratingOverDataArray == false)
+                else if (token?.Parent != null && token?.Parent is JProperty dataArrayProperty && dataArrayProperty.Name == "data" && jobRaw.IteratingOverDataArray == false)
                 {
                     // In this place, we say that we have found our data array.
                     jobRaw.IteratingOverDataArray = true;
@@ -69,12 +70,12 @@ namespace SpreadsheetEvaluator.Domain.Services
                     }
 
                     // In this place, we say that we have found formula object.
-                    if (token is JObject formulaObject && formulaObject.ContainsKey(Constants.JobJson.Formula) && jobRaw.IsInFormulaObject == false)
+                    if (token is JObject formulaObject && formulaObject.ContainsKey("formula") && jobRaw.IsInFormulaObject == false)
                     {
                         jobRaw.IsInFormulaObject = true;
                     }
 
-                    if (token is JProperty && token?.Parent is JObject firtValuePropertyParent && firtValuePropertyParent.ContainsKey(Constants.JobJson.Value))
+                    if (token is JProperty && token?.Parent is JObject firstValuePropertyParent && firstValuePropertyParent.ContainsKey("value"))
                     {
                         jobRaw.FoundValue = true;
                     }
@@ -84,7 +85,7 @@ namespace SpreadsheetEvaluator.Domain.Services
 
                         var isInsideFormulaObject = valueProperty.AncestorsAndSelf()
                             .OfType<JObject>()
-                            .Any(n => n.ContainsKey(Constants.JobJson.Formula));
+                            .Any(n => n.ContainsKey("formula"));
 
                         if (isInsideFormulaObject == false)
                         {
@@ -99,7 +100,7 @@ namespace SpreadsheetEvaluator.Domain.Services
                     }
                     else if (token is JProperty formulaProperty && jobRaw.IsInFormulaObject)
                     {
-                        if (formulaProperty.Name == Constants.JobJson.IfValue && jobRaw.FoundIfFormula == false)
+                        if (formulaProperty.Name == "if" && jobRaw.FoundIfFormula == false)
                         {
                             jobRaw.FoundIfFormula = true;
                         }
@@ -113,7 +114,7 @@ namespace SpreadsheetEvaluator.Domain.Services
                             var ifFormula = FormulaHelper.CreateIfFormula(ifObjectArray);
                             jobRaw.SetCellValue(ifFormula);
                         }
-                        else if (token is JProperty concatFormulaProperty && concatFormulaProperty.Name == Constants.Formula.Concat && jobRaw.FoundIfFormula == false)
+                        else if (token is JProperty concatFormulaProperty && concatFormulaProperty.Name == "concat" && jobRaw.FoundIfFormula == false)
                         {
                             var concatFormula = FormulaHelper.CreateStandardFormula(concatFormulaProperty);
                             jobRaw.SetCellValue(concatFormula);
@@ -123,7 +124,7 @@ namespace SpreadsheetEvaluator.Domain.Services
                             var standardFormula = FormulaHelper.CreateStandardFormula(standardFormulaProperty);
                             jobRaw.SetCellValue(standardFormula);
                         }
-                        else if (token is JProperty notFormulaProperty && notFormulaProperty.Name == Constants.Formula.Not && jobRaw.FoundIfFormula == false)
+                        else if (token is JProperty notFormulaProperty && notFormulaProperty.Name == "not" && jobRaw.FoundIfFormula == false)
                         {
                             var notFormula = FormulaHelper.CreateNotOperatorFormula(notFormulaProperty);
                             jobRaw.SetCellValue(notFormula);
@@ -133,7 +134,7 @@ namespace SpreadsheetEvaluator.Domain.Services
                             var logicalFormula = FormulaHelper.CreateLogicalOperatorsFormula(logicalFormulaProperty);
                             jobRaw.SetCellValue(logicalFormula);
                         }
-                        else if (token is JObject formulaReferenceTypeObject && formulaReferenceTypeObject.ContainsKey(Constants.JobJson.Formula) && formulaReferenceTypeObject[Constants.JobJson.Formula][Constants.JobJson.Reference] != null)
+                        else if (token is JObject formulaReferenceTypeObject && formulaReferenceTypeObject.ContainsKey("formula") && formulaReferenceTypeObject["formula"]["reference"] != null)
                         {
                             var referenceFormula = FormulaHelper.CreateReferenceFormula(formulaReferenceTypeObject);
                             jobRaw.SetCellValue(referenceFormula);

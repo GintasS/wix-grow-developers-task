@@ -1,4 +1,5 @@
-﻿using SpreadsheetEvaluator.Domain.Extensions;
+﻿using System;
+using SpreadsheetEvaluator.Domain.Extensions;
 using SpreadsheetEvaluator.Domain.Interfaces;
 using SpreadsheetEvaluator.Domain.Models.Enums;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
@@ -21,11 +22,6 @@ namespace SpreadsheetEvaluator.Domain.Services
 
             foreach(var job in computedJobs)
             {
-                /*
-                var isCellRowInvertedNormalCellLastIndex = jobs[jobIndex].Cells.SelectMany(x => x).FirstOrDefault(x => x.Value.CellType != CellType.Formula);
-                var isCellRowInvertedFormulaCellFirstIndex = jobs[jobIndex].Cells.FindIndex(x => x.Value.CellType == CellType.Formula);
-                */
-
                 foreach (var cellRow in job.Cells)
                 {
                     // Reverse cellRow if the value is at the end and formulas are at the start.
@@ -39,66 +35,70 @@ namespace SpreadsheetEvaluator.Domain.Services
 
                     foreach (var individualCell in cellRow)
                     {
-                        if (individualCell.Value.Value is Formula formula) 
+                        var formula = individualCell.Value.Value as Formula;
+                        if (formula == null)
                         {
-                            // If the formula of a reference type, find a value that this refernce points to.
-                            if (formula.FormulaOperator.FormulaResultType == FormulaResultType.Reference)
+                            continue;
+                        }
+
+                        // If the formula of a reference type, find a value that this reference points to.
+                        if (formula.FormulaOperator.FormulaResultType == FormulaResultType.Reference)
+                        {
+                            var referencedCell = job.Cells.SelectMany(x => x)
+                                .FirstOrDefault(x => x.Key == formula.Text);
+
+                            if (referencedCell != null)
                             {
-                                var referencedCell = job.Cells.SelectMany(x => x)
-                                    .FirstOrDefault(x => x.Key == formula.Text);
-
-                                if (referencedCell != null)
-                                {
-                                    individualCell.Value.UpdateCell(referencedCell.Value);
-                                }
-                            }
-                            else
-                            {
-                                // Filter cells without formulas.
-                                var cellsWithoutFormulas = cellRow.Where(x => x.Value.IsFormulaCell == false)
-                                    .ToList();
-
-                                // Check if our values that are not yet replaced in the formula ("A1 + B1")
-                                // are of a mismatching type.
-                                var hasMismatchingElements = cellsWithoutFormulas.Where(x => formula.Text.IndexOf(x.Key) >= 0)
-                                    .Select(x => x.Value.CellType)
-                                    .ToList()
-                                    .HasUniqueElements() == false;
-
-                                if (hasMismatchingElements)
-                                {
-                                    individualCell.Value.SetCellAsErrorCell();
-                                    continue;
-                                }
-
-                                // Replace references in the formula.
-                                // E.g "A1 + B1" is going to be "5 + 4" after this method execution.
-                                var mathExpressionText = CalculationHelper.ReplaceFormulaReferencesWithValues(formula.Text, cellsWithoutFormulas);
-                                
-                                // Replace cell's value with the math expression, which is a string currently.
-                                individualCell.Value.UpdateCell(mathExpressionText);
-
-                                // Compute math expression.
-                                // Do not compute value for formula with a string type,
-                                // because we will get an exception.
-
-                                object computationResult = individualCell.Value.Value;
-                                if (formula.FormulaOperator.FormulaResultType != FormulaResultType.Text)
-                                {
-                                    computationResult = computationResult.CalculateMathExpression();
-                                }
-
-                                // If we got a null, set this cell as an error cell.
-                                if (computationResult == null)
-                                {
-                                    individualCell.Value.SetCellAsErrorCell();
-                                    continue;
-                                }
-
-                                // Update the cell with the computed value.
-                                individualCell.Value.UpdateCell((dynamic)computationResult);
+                                individualCell.Value.UpdateCell(referencedCell.Value);
                             }
                         }
+                        else
+                        {
+                            // Filter cells without formulas.
+                            var cellsWithoutFormulas = cellRow.Where(x => x.Value.IsFormulaCell == false)
+                                .ToList();
+
+                            // Check if our values that are not yet replaced in the formula ("A1 + B1")
+                            // are of a mismatching type.
+                            var hasMismatchingElementTypes = cellsWithoutFormulas.Where(x => formula.Text.IndexOf(x.Key, StringComparison.Ordinal) >= 0)
+                                .Select(x => x.Value.CellType)
+                                .ToList()
+                                .HasMismatchingElementTypes();
+
+                            if (hasMismatchingElementTypes)
+                            {
+                                individualCell.Value.SetCellAsErrorCell();
+                                continue;
+                            }
+
+                            // Replace references in the formula.
+                            // E.g "A1 + B1" is going to be "5 + 4" after this method execution.
+                            var mathExpressionText = CalculationHelper.ReplaceFormulaReferencesWithValues(formula.Text, cellsWithoutFormulas);
+                            
+                            // Replace cell's value with the math expression, which is a string currently.
+                            individualCell.Value.UpdateCell(mathExpressionText);
+
+                            // Compute math expression.
+                            // Do not compute value for formula with a string type,
+                            // because we will get an exception.
+
+                            var computationResult = individualCell.Value.Value;
+                            if (formula.FormulaOperator.FormulaResultType != FormulaResultType.Text)
+                            {
+                                computationResult = computationResult.CalculateMathExpression();
+                            }
+
+                            // If we got a null, set this cell as an error cell.
+                            if (computationResult == null)
+                            {
+                                individualCell.Value.SetCellAsErrorCell();
+                                continue;
+                            }
+
+                            // Update the cell with the computed value.
+                            individualCell.Value.UpdateCell((dynamic)computationResult);
+                        }
+                        
                     }                 
                 } 
             }
