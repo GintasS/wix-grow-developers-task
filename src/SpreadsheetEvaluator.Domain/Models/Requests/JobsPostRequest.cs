@@ -39,22 +39,21 @@ namespace SpreadsheetEvaluator.Domain.Models.Requests
         {
             Values = new Values();
 
-            if (cellValue.CellType == CellType.Number)
+            switch (cellValue.CellType)
             {
-                Values.Number = (decimal)cellValue.Value;
-            }
-            else if (cellValue.CellType == CellType.Text)
-            {
-                Values.Text = cellValue.Value.ToString();
-            }
-            else if (cellValue.CellType == CellType.Boolean)
-            {
-                Values.Boolean = (bool)cellValue.Value;
-            }
-            else if (cellValue.IsErrorCell)
-            {
-                Error = cellValue.Value.ToString();
-                Values = null;
+                case CellType.Number:
+                    Values.Number = (decimal)cellValue.Value;
+                    break;
+                case CellType.Text:
+                    Values.Text = cellValue.Value.ToString();
+                    break;
+                case CellType.Boolean:
+                    Values.Boolean = (bool)cellValue.Value;
+                    break;
+                case CellType.Error:
+                    Error = cellValue.Value.ToString();
+                    Values = null;
+                    break;
             }
         }
     }
