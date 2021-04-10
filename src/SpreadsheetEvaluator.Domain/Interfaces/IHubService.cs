@@ -2,7 +2,7 @@
 {
     public interface IHubService
     {
-        string GetJobs();
-        void PostJobs(string submissionUrl, string payload);
+        public string GetJobs();
+        public void PostJobs(string submissionUrl, string payload);
     }
 }

@@ -5,6 +5,6 @@ namespace SpreadsheetEvaluator.Domain.Interfaces
 {
     public interface IFormulaEvaluatorService
     {
-        public List<ComputedJob> ComputeFormulas(List<SingleJob> jobsList);
+        public List<JobComputed> ComputeFormulas(List<JobRaw> jobsList);
     }
 }
