@@ -25,29 +25,26 @@ namespace SpreadsheetEvaluator.Domain.Utilities
             };
 
             var jobs = jobsComputedList.Select(x => new {
-                Id = x.Id,
-                Cells = x.Cells
+                x.Id,
+                x.Cells
             }).ToList();
 
-            for (var jobIndex = 0; jobIndex < jobs.Count; jobIndex++)
+            foreach (var job in jobs)
             {
                 var jobsPostModel = new JobsPostModel
                 {
-                    Id = jobs[jobIndex].Id,
+                    Id = job.Id,
                     Values = new List<List<JobsPostValueModel>>()
                 };
 
-                for (var cellRowIndex = 0; cellRowIndex < jobs[jobIndex].Cells.Count; cellRowIndex++)
+                foreach (var cellRow in job.Cells)
                 {
-                    if (cellRowIndex >= jobsPostModel.Values.Count)
-                    {
-                        jobsPostModel.Values.Add(new List<JobsPostValueModel>());
-                    }
+                    var newValueCellRow = new List<JobsPostValueModel>();
+                    jobsPostModel.Values.Add(newValueCellRow);
 
-                    for (var cellIndex = 0; cellIndex < jobs[jobIndex].Cells[cellRowIndex].Count(); cellIndex++)
+                    foreach (var individualCell in cellRow)
                     {
-                        var individualCell = jobs[jobIndex].Cells[cellRowIndex][cellIndex];
-                        jobsPostModel.Values[cellRowIndex].Add(new JobsPostValueModel(individualCell.Value));
+                        newValueCellRow.Add(new JobsPostValueModel(individualCell.Value));
                     }
                 }
 

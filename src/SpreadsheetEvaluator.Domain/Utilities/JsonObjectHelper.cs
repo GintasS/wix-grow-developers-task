@@ -51,12 +51,12 @@ namespace SpreadsheetEvaluator.Domain.Utilities
             }
             else if (property.Name == "number")
             {
-                decimal.TryParse(property.Value.ToString(), out decimal decimalValue);
+                decimal.TryParse(property.Value.ToString(), out var decimalValue);
                 return decimalValue;
             }
             else if (property.Name == "boolean")
             {
-                bool.TryParse(property.Value.ToString(), out bool booleanValue);
+                bool.TryParse(property.Value.ToString(), out var booleanValue);
                 return booleanValue;
             }
 
