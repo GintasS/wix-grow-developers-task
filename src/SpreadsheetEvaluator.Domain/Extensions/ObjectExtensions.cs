@@ -27,7 +27,6 @@ namespace SpreadsheetEvaluator.Domain.Extensions
                    || value is bool
                    || value is Formula
                    || value is CellValue;
-
         }
 
         public static object CalculateMathExpression(this object valueToCompute)
