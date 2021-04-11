@@ -14,7 +14,7 @@
 <p>This is task for Wix Grow Developer programme.</p>
 
 ## <a name="ThirdPartyLibraries"></a>Third-party Libraries
-<p>In this project, I've use third-party libraries - NuGet packages.</p>
+<p>In this project, I've used third-party libraries - NuGet packages.</p>
 
 <table style="width:30%">
   <tr>
