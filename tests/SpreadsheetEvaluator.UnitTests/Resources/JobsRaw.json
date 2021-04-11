@@ -44,7 +44,7 @@
           { "value": { "number": 7 } },
           {
             "formula": {
-              "sum": [
+              "multiply": [
                 { "reference": "A1" },
                 { "reference": "B1" },
                 { "reference": "C1" }
@@ -53,6 +53,23 @@
           }
         ]
       ]
+    },
+    {
+      "id": "job-5",
+      "data": [
+        [
+          {
+            "formula": {
+              "concat": [
+                { "value": { "text": "Hello" } },
+                { "value": { "text": ", " } },
+                { "value": { "text": "World!" } }
+              ]
+            }
+          }
+        ]
+      ]
     }
+
   ]
 }
