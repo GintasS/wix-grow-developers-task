@@ -13,6 +13,19 @@
 
 <p>This is task for Wix Grow Developer programme.</p>
 
+## <a name="Features"></a>Features
+
+<ul>
+  <li>Features Domain-Driven design architecture.</li>
+  <li>The project has exit codes, console logs to inform the user about the program's state.</li>
+  <li>Exception handling, displaying errors to the user.</li>
+  <li>Using 3rd party libraries to ease our work: to help with json parsing, DI, unit testing and more.</li>
+  <li>Application settings. You can set hard-coded values inside appsettings.json.</li>
+  <li>We also have different class models (DTOs) for different HTTP GET and POST requests.</li>
+  <li>For the testing part, we use xUnit, mocking, fluent assertions and more.</li>
+  <li>We use AAA (Act-Arrange-Assert) structure for our tests.</li>
+</ul>
+
 ## <a name="ThirdPartyLibraries"></a>Third-party Libraries
 <p>In this project, I've used third-party libraries - NuGet packages.</p>
 
@@ -63,19 +76,6 @@
     <td>xunit.runner.visualstudio</td>
   </tr>  
 </table>
-
-## <a name="Features"></a>Features
-
-<ul>
-  <li>Features Domain-Driven design architecture.</li>
-  <li>The project has exit codes, console logs to inform the user about the program's state.</li>
-  <li>Exception handling, displaying errors to the user.</li>
-  <li>Using 3rd party libraries to ease our work: to help with json parsing, DI, unit testing and more.</li>
-  <li>Application settings. You can set hard-coded values inside appsettings.json.</li>
-  <li>We also have different class models (DTOs) for different HTTP GET and POST requests.</li>
-  <li>For the testing part, we use xUnit, mocking, fluent assertions and more.</li>
-  <li>We use AAA (Act-Arrange-Assert) structure for our tests.</li>
-</ul>
 
 ## <a name="Changelog"></a>Changelog
 
