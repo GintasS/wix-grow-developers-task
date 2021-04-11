@@ -61,6 +61,9 @@
     <td>Newtonsoft.Json</td>
   </tr>
   <tr>
+    <td>coverlet.collector</td>
+  </tr>
+  <tr>
     <td>FluentAssertions</td>
   </tr> 
   <tr>
