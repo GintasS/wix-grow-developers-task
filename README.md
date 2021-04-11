@@ -16,7 +16,7 @@
 ## <a name="Features"></a>Features
 
 <ul>
-  <li>Features Domain-Driven design architecture.</li>
+  <li>Features Domain-Driven design (DDD) architecture.</li>
   <li>The project has exit codes, console logs to inform the user about the program's state.</li>
   <li>Exception handling, displaying errors to the user.</li>
   <li>Using 3rd party libraries to ease our work: to help with json parsing, DI, unit testing and more.</li>
