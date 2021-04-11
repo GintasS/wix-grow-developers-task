@@ -5,6 +5,7 @@
 ## Jump to...
 
   - [Intro](#intro)
+  - [Features](#features)
   - [Third-party Libraries](#ThirdPartyLibraries)
   - [Changelog](#changelog)
 
@@ -12,8 +13,21 @@
 
 <p>This is task for Wix Grow Developer programme.</p>
 
+## <a name="Features"></a>Features
+
+<ul>
+  <li>Features Domain-Driven design (DDD) architecture.</li>
+  <li>The project has exit codes, console logs to inform the user about the program's state.</li>
+  <li>Exception handling, displaying errors to the user.</li>
+  <li>Using 3rd party libraries to ease our work: to help with json parsing, DI, unit testing and more.</li>
+  <li>Application settings. You can set hard-coded values inside appsettings.json.</li>
+  <li>We also have different class models (DTOs) for different HTTP GET and POST requests.</li>
+  <li>For the testing part, we use xUnit, mocking, fluent assertions and more.</li>
+  <li>We use AAA (Act-Arrange-Assert) structure for our tests.</li>
+</ul>
+
 ## <a name="ThirdPartyLibraries"></a>Third-party Libraries
-<p>In this project, I've use third-party libraries - NuGet packages.</p>
+<p>In this project, I've used third-party libraries - NuGet packages.</p>
 
 <table style="width:30%">
   <tr>
@@ -45,6 +59,9 @@
   </tr> 
   <tr>
     <td>Newtonsoft.Json</td>
+  </tr>
+  <tr>
+    <td>coverlet.collector</td>
   </tr>
   <tr>
     <td>FluentAssertions</td>
@@ -93,4 +110,13 @@
   <li>Added exception handling where needed.</li>
   <li>Added Exit codes for application.</li>
   <li>Started using ReSharper to improve my code.</li>
+</ul>
+
+<h3>CHANGELOG 4/11/2020</h3>
+<ul>
+  <li>Improved code.</li>
+  <li>Added more tests.</li>
+  <li>Updated the final readme.</li>
+  <li>Removed unused project.</li>
+  <li>Other small improvements.</li>
 </ul>
