@@ -9,11 +9,6 @@ using System.Linq;
 
 namespace SpreadsheetEvaluator.Domain.Services
 {
-    // TODO: We may not catch constant values (now we are picking references nicely).
-    // TODO: Make this parser more robust
-    // TODO: Find edge cases to break your code
-    // TODO: Validation everywhere
-    // TODO: If formula comes first, things can break and we will not save value.
     public class SpreadsheetCreationService : ISpreadsheetCreationService
     {
         public List<JobRaw> Create(JobsGetRawResponse jobsGetRawResponse)
