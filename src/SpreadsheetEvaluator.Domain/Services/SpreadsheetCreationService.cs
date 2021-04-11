@@ -11,14 +11,9 @@ namespace SpreadsheetEvaluator.Domain.Services
 {
     // TODO: We may not catch constant values (now we are picking references nicely).
     // TODO: Make this parser more robust
-    // TODO: Clean up code using suggestions from VS
-    // TODO: Tests
     // TODO: Find edge cases to break your code
     // TODO: Validation everywhere
-    // TODO: Add something to changelog.
-    // TODO: Exception handling where needed
     // TODO: If formula comes first, things can break and we will not save value.
-    // TODO: Run Resharper - Inspection - and fix spots.
     public class SpreadsheetCreationService : ISpreadsheetCreationService
     {
         public List<JobRaw> Create(JobsGetRawResponse jobsGetRawResponse)
@@ -131,8 +126,8 @@ namespace SpreadsheetEvaluator.Domain.Services
                         }
                         else if (token is JProperty logicalFormulaProperty && Constants.LogicalOperatorNames.Exists(x => x.Equals(logicalFormulaProperty.Name)) && jobRaw.FoundIfFormula == false)
                         {
-                            var logicalFormula = FormulaHelper.CreateLogicalOperatorsFormula(logicalFormulaProperty);
-                            jobRaw.SetCellValue(logicalFormula);
+                            var standardFormula = FormulaHelper.CreateStandardFormula(logicalFormulaProperty);
+                            jobRaw.SetCellValue(standardFormula);
                         }
                         else if (token is JObject formulaReferenceTypeObject && formulaReferenceTypeObject.ContainsKey("formula") && formulaReferenceTypeObject["formula"]["reference"] != null)
                         {

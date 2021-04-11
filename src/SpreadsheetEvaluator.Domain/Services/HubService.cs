@@ -28,7 +28,10 @@ namespace SpreadsheetEvaluator.Domain.Services
         public HttpResponseMessage PostJobs(string submissionUrl, string payload)
         {
             var content = new StringContent(payload, Encoding.UTF8, Constants.HubApi.PostMediaType);
-            return _httpClient.PostAsync(submissionUrl, content).Result;
+            var httpResponse = _httpClient.PostAsync(submissionUrl, content).Result;
+            httpResponse.EnsureSuccessStatusCode();
+
+            return httpResponse;
         }
     }
 }

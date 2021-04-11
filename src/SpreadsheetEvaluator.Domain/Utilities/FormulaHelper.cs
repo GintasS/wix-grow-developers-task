@@ -9,6 +9,11 @@ namespace SpreadsheetEvaluator.Domain.Utilities
     {
         public static Formula CreateIfFormula(JArray ifObjectArray)
         {
+            if (ifObjectArray.Count != 3)
+            {
+                return null;
+            }
+
             var firstIfObject = ifObjectArray[0] as JObject;
             var secondIfObject = ifObjectArray[1] as JObject;
             var thirdIfObject = ifObjectArray[2] as JObject;
@@ -18,7 +23,13 @@ namespace SpreadsheetEvaluator.Domain.Utilities
                 return null;
             }
 
-            var formulaOperator = Constants.FormulaOperators.Single(x => firstIfObject.ContainsKey(x.JsonName));
+            var formulaOperator = Constants.FormulaOperators.SingleOrDefault(x => firstIfObject.ContainsKey(x.JsonName));
+
+            if (formulaOperator == null)
+            {
+                return null;
+            }
+
             var elements = firstIfObject[formulaOperator.JsonName] as JArray;
 
             if (elements == null || secondIfObject["reference"] == null || thirdIfObject["reference"] == null)
@@ -28,11 +39,7 @@ namespace SpreadsheetEvaluator.Domain.Utilities
 
             var expr = $"IIF({TryParseFormulaReferences(elements, formulaOperator)},{secondIfObject["reference"]},{thirdIfObject["reference"]})";
 
-            return new Formula
-            {
-                Text = expr,
-                FormulaOperator = formulaOperator
-            };
+            return new Formula(expr, formulaOperator);
         }
 
         public static Formula CreateReferenceFormula(JObject formulaReferenceTypeObject)
@@ -43,32 +50,17 @@ namespace SpreadsheetEvaluator.Domain.Utilities
                 return null;
             }
 
-            return new Formula
-            {
-                Text = formulaReferenceTypeObject["formula"]["reference"].ToString(),
-                FormulaOperator = Constants.FormulaOperators[10]
-            };
+            var expr = formulaReferenceTypeObject["formula"]["reference"].ToString();
+
+            return new Formula(expr, Constants.FormulaOperators[10]);
         }
-
-        public static Formula CreateLogicalOperatorsFormula(JProperty formulaProperty)
-        {
-            var formulaOperator = Constants.FormulaOperators
-                .SingleOrDefault(x => formulaProperty.Name.Equals(x.JsonName));
-
-            return new Formula
-            {
-                Text = TryParseFormulaReferences(formulaProperty.Value as JArray, formulaOperator),
-                FormulaOperator = formulaOperator
-            };
-        }
-
+        
         public static Formula CreateNotOperatorFormula(JProperty formulaProperty)
         {
-            return new Formula
-            {
-                Text = Constants.FormulaOperators[5].MathSymbol + " " + JsonObjectHelper.GetValueOfAnyType(formulaProperty),
-                FormulaOperator = Constants.FormulaOperators[5]
-            };
+            var expr = Constants.FormulaOperators[5].MathSymbol + " " +
+                       JsonObjectHelper.GetValueOfAnyType(formulaProperty);
+
+            return new Formula(expr, Constants.FormulaOperators[5]);
         }
 
         public static Formula CreateStandardFormula(JProperty formulaProperty)
@@ -76,11 +68,14 @@ namespace SpreadsheetEvaluator.Domain.Utilities
             var formulaOperator = Constants.FormulaOperators
                 .SingleOrDefault(x => formulaProperty.Name.Equals(x.JsonName));
 
-            return new Formula
+            if (formulaOperator == null)
             {
-                Text = TryParseFormulaReferences(formulaProperty.Value as JArray, formulaOperator),
-                FormulaOperator = formulaOperator
-            };
+                return null;
+            }
+
+            var expr = TryParseFormulaReferences(formulaProperty.Value as JArray, formulaOperator);
+
+            return new Formula(expr, formulaOperator);
         }
 
         private static string TryParseFormulaReferences(JArray elements, FormulaOperator formulaOperator)
@@ -100,7 +95,7 @@ namespace SpreadsheetEvaluator.Domain.Utilities
 
                 if (i + 1 < elements.Count)
                 {
-                    if (string.IsNullOrEmpty(formulaOperator.MathSymbol) == false)
+                    if (formulaOperator != null && string.IsNullOrEmpty(formulaOperator.MathSymbol) == false)
                     {
                         expr += " " + formulaOperator.MathSymbol + " ";
                     }

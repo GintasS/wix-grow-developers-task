@@ -62,7 +62,5 @@ namespace SpreadsheetEvaluator.Domain.Utilities
 
             return null;
         }
-
-
     }
 }
