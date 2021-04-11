@@ -77,7 +77,7 @@ namespace SpreadsheetEvaluator.Application
             // 9. Display a success message if our results were received and they were correct.
             Console.WriteLine(jobsPostResponse.Message);
 
-            return (int) ExitCode.Success;
+            return (int)ExitCode.Success;
         }
     }
 }
