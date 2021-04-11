@@ -13,7 +13,7 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
         public bool IsMultiArray { get; set; }
         public bool FoundValue { get; set; }
 
-        // Formulas
+        // Formulas.
         public bool IsInFormulaObject { get; set; }
         public bool FoundIfFormula { get; set; }
 

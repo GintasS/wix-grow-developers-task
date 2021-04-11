@@ -15,6 +15,7 @@ namespace SpreadsheetEvaluator.Domain.Models.MathModels
         public object Value { get; private set; }
         public CellType CellType { get; private set; } = CellType.Undefined;
         public bool IsFormulaCell => Value is Formula;
+        public bool IsErrorCell => CellType is CellType.Error;
 
         public CellValue(object value)
         {
