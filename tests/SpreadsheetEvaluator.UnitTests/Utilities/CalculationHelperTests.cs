@@ -4,22 +4,22 @@ using SpreadsheetEvaluator.Domain.Models.MathModels;
 using SpreadsheetEvaluator.Domain.Utilities;
 using Xunit;
 
-namespace SpreadsheetEvaluator.UnitTests.Extensions
+namespace SpreadsheetEvaluator.UnitTests.Utilities
 {
     public class CalculationHelperTests
     {
-        private static object[] _firstRow =
+        private static readonly object[] FirstRow =
         {
             "A1 + B1",
             "5 + 10",
             new List<Cell>
             {
-                new Cell()
+                new Cell
                 {
                     Key = "A1",
                     Value = new CellValue(5)
                 },
-                new Cell()
+                new Cell
                 {
                     Key = "B1",
                     Value = new CellValue(10)
@@ -27,18 +27,18 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
             }
         };
 
-        private static object[] _secondRow =
+        private static readonly object[] SecondRow =
         {
             "IFF(A1>B1,A1,B1)",
             "IFF(5>10,5,10)",
             new List<Cell>
             {
-                new Cell()
+                new Cell
                 {
                     Key = "A1",
                     Value = new CellValue(5)
                 },
-                new Cell()
+                new Cell
                 {
                     Key = "B1",
                     Value = new CellValue(10)
@@ -46,18 +46,18 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
             }
         };
 
-        private static object[] _thirdRow =
+        private static readonly object[] ThirdRow =
         {
             "NOT B1",
             "NOT 10",
             new List<Cell>
             {
-                new Cell()
+                new Cell
                 {
                     Key = "A1",
                     Value = new CellValue(5)
                 },
-                new Cell()
+                new Cell
                 {
                     Key = "B1",
                     Value = new CellValue(10)
@@ -67,9 +67,9 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
 
         public static IEnumerable<object[]> Data => new List<object[]>
         {
-            _firstRow,
-            _secondRow,
-            _thirdRow
+            FirstRow,
+            SecondRow,
+            ThirdRow
         };
 
         [Theory]

@@ -6,13 +6,14 @@ using Newtonsoft.Json;
 using SpreadsheetEvaluator.Domain.Configuration;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
 using SpreadsheetEvaluator.Domain.Utilities;
+using SpreadsheetEvaluator.UnitTests.TestHelpers;
 using Xunit;
 
-namespace SpreadsheetEvaluator.UnitTests.Extensions
+namespace SpreadsheetEvaluator.UnitTests.Utilities
 {
     public class JobsPostRequestHelperTests
     {
-        private static List<JobComputed> _jobsComputedExpected = new List<JobComputed>
+        private static readonly List<JobComputed> JobsComputedExpected = new List<JobComputed>
         {
             new JobComputed
             {
@@ -21,7 +22,7 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
                 {
                     new List<Cell>
                     {
-                        new Cell()
+                        new Cell
                         {
                             Key = "A1",
                             Value = new CellValue(5)
@@ -43,7 +44,7 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
 
         public static IEnumerable<object[]> Data => new List<object[]>
         {
-            new object[] { _jobsComputedExpected }
+            new object[] { JobsComputedExpected }
         };
 
         private readonly JobsPostRequestHelper _jobsPostRequestHelper;
@@ -67,7 +68,7 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
         {
             // Arrange
             var jobsComputedList = jobsComputed as List<JobComputed>;
-            var expectedJobsPostRequestJson = ResourceFileReader.GetString("SpreadsheetEvaluator.UnitTests.Resources.JobsPostRequest.json");
+            var expectedJobsPostRequestJson = ResourceFileReaderHelper.ReadFile("SpreadsheetEvaluator.UnitTests.Resources.JobsPostRequest.json");
 
             // Act
             var actualJobsPostRequest = _jobsPostRequestHelper.CreatePostRequest(jobsComputedList);

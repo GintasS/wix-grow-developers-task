@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using SpreadsheetEvaluator.Domain.Extensions;
@@ -16,7 +15,7 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
         public void Should_Check_List_ForMismatchingTypes(bool expected, int[] abcObjects)
         {
             // Arrange
-            List<int> list = abcObjects?.ToList();
+            var list = abcObjects?.ToList();
 
             // Act
             var actual = list.HasMismatchingElementTypes();

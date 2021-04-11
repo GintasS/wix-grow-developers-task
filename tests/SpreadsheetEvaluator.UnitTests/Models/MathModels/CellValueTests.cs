@@ -14,21 +14,26 @@ namespace SpreadsheetEvaluator.UnitTests.Models.MathModels
         public static IEnumerable<object[]> DataCreateCell => new List<object[]>
         {
             new object[] { 0, CellType.Number, 0 },
-            new object[] { true, CellType.Boolean, true }
+            new object[] { true, CellType.Boolean, true },
+            new object[] { 3.456, CellType.Number, 3.456 }
         };
 
-        public static IEnumerable<object[]> DataCreateCellStringDecimal = new List<object[]>
+        public static IEnumerable<object[]> DataCreateCellString= new List<object[]>
         {
-            new object[] { "30.50", CellType.Number, "30.50", true},
-            new object[] { "test", CellType.Text, "test", false}
+            new object[] { "test", CellType.Text, "test"}
+        };
+
+        public static IEnumerable<object[]> DataCreateCellDecimal = new List<object[]>
+        {
+            new object[] { "30.50", CellType.Number, "30.50"}
         };
 
         [Theory]
         [MemberData(nameof(DataCreateCell))]
-        public void Should_Create_Cell_Value(object expectedValue, CellType expectedCellType, object value)
+        public void Should_Create_Cell_Value(object expectedValue, CellType expectedCellType, object valueToSet)
         {
             // Act
-            var cellValue = new CellValue(value);
+            var cellValue = new CellValue(valueToSet);
 
             // Assert
             cellValue.Value.Should().Be(expectedValue);
@@ -36,56 +41,61 @@ namespace SpreadsheetEvaluator.UnitTests.Models.MathModels
         }
 
         [Theory]
-        [MemberData(nameof(DataCreateCellStringDecimal))]
-        public void Should_Create_Cell_Value_For_Decimal_Value(object expectedValue, CellType expectedCellType, object value, bool isDecimalValue = false, bool isStringValue = false)
+        [MemberData(nameof(DataCreateCellString))]
+        public void Should_Create_Cell_Value_For_String_Value(object expectedValue, CellType expectedCellType, object valueToSet)
         {
-            // Arrange
-            if (isDecimalValue)
-            {
-                decimal.TryParse(value.ToString(), out var givenDecimalResult);
-                decimal.TryParse(value.ToString(), out var expectedDecimalResult);
-                value = givenDecimalResult;
-                expectedValue = expectedDecimalResult;
-            }
-
             // Act
-            var cellValue = new CellValue(value);
+            var cellValue = new CellValue(valueToSet);
 
             // Assert
             cellValue.Value.Should().Be(expectedValue);
             cellValue.CellType.Should().Be(expectedCellType);
+            cellValue.Value.Should().NotBeSameAs(expectedValue);
+        }
 
-            if (isStringValue)
-            {
-                cellValue.Value.Should().NotBeSameAs(expectedValue);
-            }
+        [Theory]
+        [MemberData(nameof(DataCreateCellDecimal))]
+        public void Should_Create_Cell_Value_For_Decimal_Value(object expectedValue, CellType expectedCellType, object valueToSet)
+        {
+            // Arrange
+            decimal.TryParse(expectedValue.ToString(), out var expectedDecimalResult);
+            decimal.TryParse(valueToSet.ToString(), out var givenDecimalResult);
+            expectedValue = expectedDecimalResult;
+            valueToSet = givenDecimalResult;
+
+            // Act
+            var cellValue = new CellValue(valueToSet);
+
+            // Assert
+            cellValue.Value.Should().Be(expectedValue);
+            cellValue.CellType.Should().Be(expectedCellType);
         }
 
         [Fact]
-        public void Should_Create_Cell_Value_With_Formula_Object_Value()
+        public void Should_Create_Cell_Value_For_Formula_Object_Value()
         {
             // Arrange
-            var formula = new Formula
-            {
-                FormulaOperator = Constants.FormulaOperators[0],
-                Text = "A1"
-            };
+            var formula = new Formula("A1", Constants.FormulaOperators[0]);
 
             // Act
             var cellValue = new CellValue(formula);
 
             // Assert
             var formulaValueFromCell = cellValue.Value as Formula;
-            formulaValueFromCell.Should().NotBe(null);
-            formulaValueFromCell.Should().NotBeSameAs(formula);
-            formulaValueFromCell.FormulaOperator.Should().Be(formula.FormulaOperator);
-            formulaValueFromCell.Text.Should().Be(formula.Text);
+
+            formulaValueFromCell?.Should().NotBe(null);
+            formulaValueFromCell?.Should().NotBeSameAs(formula);
+            formulaValueFromCell?.FormulaOperator.Should().NotBeSameAs(formula.FormulaOperator);
+            formulaValueFromCell?.FormulaOperator.JsonName.Should().Be(formula.FormulaOperator.JsonName);
+            formulaValueFromCell?.FormulaOperator.MathSymbol.Should().Be(formula.FormulaOperator.MathSymbol);
+            formulaValueFromCell?.FormulaOperator.FormulaResultType.Should().Be(formula.FormulaOperator.FormulaResultType);
+            formulaValueFromCell?.Text.Should().Be(formula.Text);
             cellValue.Value.Should().BeOfType<Formula>();
-            cellValue.CellType.Should().Be(CellType.Formula);
+            cellValue.IsFormulaCell.Should().BeTrue();
         }
 
         [Fact]
-        public void Should_Create_Cell_Value_With_Cell_Value_Object()
+        public void Should_Create_Cell_Value_For_Cell_Value_Object()
         {
             // Arrange
             var originalCellValue = new CellValue("test");
@@ -112,7 +122,7 @@ namespace SpreadsheetEvaluator.UnitTests.Models.MathModels
 
             // Assert
             cellValue.Value.Should().Be(Constants.Error.MismatchingTypes);
-            cellValue.CellType.Should().Be(CellType.Error);
+            cellValue.IsErrorCell.Should().BeTrue();
         }
 
         [Fact]
@@ -124,6 +134,5 @@ namespace SpreadsheetEvaluator.UnitTests.Models.MathModels
             // Assert
             action.Should().Throw<RuntimeBinderException>();
         }
-
     }
 }

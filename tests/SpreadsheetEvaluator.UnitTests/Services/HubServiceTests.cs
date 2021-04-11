@@ -16,7 +16,7 @@ namespace SpreadsheetEvaluator.UnitTests.Services
     public class HubServiceTests
     {
         private readonly IHubService _hubService;
-        private const string _testContent = "test content";
+        private const string TestContent = "test content";
 
         public HubServiceTests()
         {
@@ -26,7 +26,7 @@ namespace SpreadsheetEvaluator.UnitTests.Services
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(_testContent)
+                    Content = new StringContent(TestContent)
                 });
 
             var applicationSettings = new ApplicationSettings
@@ -49,7 +49,7 @@ namespace SpreadsheetEvaluator.UnitTests.Services
 
             // Assert
             httpResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            contentString.Should().Be(_testContent);
+            contentString.Should().Be(TestContent);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace SpreadsheetEvaluator.UnitTests.Services
 
             // Assert
             httpResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            contentString.Should().Be(_testContent);
+            contentString.Should().Be(TestContent);
         }
     }
 }

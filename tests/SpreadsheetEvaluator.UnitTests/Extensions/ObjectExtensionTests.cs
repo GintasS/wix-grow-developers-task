@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
+using SpreadsheetEvaluator.Domain.Configuration;
 using SpreadsheetEvaluator.Domain.Extensions;
 using SpreadsheetEvaluator.Domain.Models.MathModels;
 using Xunit;
@@ -24,7 +25,7 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
             new object[] { false, "test" },
             new object[] { false, 't' },
             new object[] { false, true },
-            new object[] { false, new Formula() }
+            new object[] { false, new Formula("test", Constants.FormulaOperators[0]) }
         };
 
         public static IEnumerable<object[]> DataIsValidCellValue => new List<object[]>
@@ -32,7 +33,7 @@ namespace SpreadsheetEvaluator.UnitTests.Extensions
             new object[] { true, "30.50", true },
             new object[] { true, "test" },
             new object[] { true, true },
-            new object[] { true, new Formula() },
+            new object[] { true, new Formula("test", Constants.FormulaOperators[0]) },
             new object[] { true, new CellValue("a") },
             new object[] { false, new JobRaw() },
             new object[] { false, 't' }

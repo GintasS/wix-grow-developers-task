@@ -12,7 +12,7 @@ namespace SpreadsheetEvaluator.UnitTests.Services
 {
     public class FormulaEvaluatorServiceTests
     {
-        private static List<JobRaw> jobsRawGiven = new List<JobRaw>
+        private static readonly List<JobRaw> JobsRawGiven = new List<JobRaw>
         {
             new JobRaw
             {
@@ -34,18 +34,29 @@ namespace SpreadsheetEvaluator.UnitTests.Services
                         new Cell
                         {
                             Key = "C1",
-                            Value = new CellValue(new Formula
-                            {
-                                FormulaOperator = Constants.FormulaOperators[0],
-                                Text = "A1 + B1"
-                            })
+                            Value = new CellValue(new Formula("A1 + B1", Constants.FormulaOperators[0]))
+                        },
+                        new Cell
+                        {
+                            Key = "D1",
+                            Value = new CellValue(new Formula("Hello, World!", Constants.FormulaOperators[9]))
+                        },
+                        new Cell
+                        {
+                            Key = "E1",
+                            Value = new CellValue(new Formula("5 + t", Constants.FormulaOperators[0]))
+                        },
+                        new Cell
+                        {
+                            Key = "F1",
+                            Value = new CellValue(new Formula("IIF(A1>B1,A1,B1)", Constants.FormulaOperators[8]))
                         }
                     }
                 }
             }
         };
 
-        private static List<JobComputed> JobsComputedExpected = new List<JobComputed>
+        private static readonly List<JobComputed> JobsComputedExpected = new List<JobComputed>
         {
             new JobComputed
             {
@@ -68,10 +79,30 @@ namespace SpreadsheetEvaluator.UnitTests.Services
                         {
                             Key = "C1",
                             Value = new CellValue(15)
+                        },
+                        new Cell
+                        {
+                            Key = "D1",
+                            Value = new CellValue("Hello, World!")
+                        },
+                        new Cell
+                        {
+                            Key = "E1",
+                            Value = new CellValue(Constants.Error.MismatchingTypes)
+                        },
+                        new Cell
+                        {
+                            Key = "F1",
+                            Value = new CellValue(10)
                         }
                     }
                 }
             }
+        };
+
+        public static IEnumerable<object[]> Data => new List<object[]>
+        {
+            new object[] { JobsComputedExpected, JobsRawGiven }
         };
 
         private readonly IFormulaEvaluatorService _formulaEvaluatorService;
@@ -79,15 +110,24 @@ namespace SpreadsheetEvaluator.UnitTests.Services
         public FormulaEvaluatorServiceTests()
         {
             _formulaEvaluatorService = new FormulaEvaluatorService();
+
+            // Set 4th cell to be of the error type.
+            JobsComputedExpected[0].Cells[0][4].Value.SetCellAsErrorCell();
         }
 
-        [Fact]
-        public void Should_Compute_Formulas_For_Jobs_Raw()
+        [Theory]
+        [MemberData(nameof(Data))]
+
+        public void Should_Compute_Formulas_For_Jobs_Raw(object expectedValue, object givenValue)
         {
+            // Arrange
+            var expectedJobsComputed = expectedValue as List<JobComputed>;
+            var givenJobsRaw = givenValue as List<JobRaw>;
+
             // Act
-            var actual = _formulaEvaluatorService.ComputeFormulas(jobsRawGiven);
+            var actual = _formulaEvaluatorService.ComputeFormulas(givenJobsRaw);
             
-            var jobsComputedExpected = JobsComputedExpected[0].Cells[0]
+            var jobsComputedExpected = expectedJobsComputed[0].Cells[0]
                 .Select(x => x)
                 .ToList();
 
@@ -96,13 +136,19 @@ namespace SpreadsheetEvaluator.UnitTests.Services
                 .ToList();
 
             // Assert
-            actual[0].Id.Should().Be(JobsComputedExpected[0].Id);
+            actual[0].Id.Should().Be(givenJobsRaw[0].Id);
 
-            for (var i = 0; i < 3;i++)
+            for (var i = 0; i < actualComputedJobs.Count; i++)
             {
                 actualComputedJobs[i].Should().NotBeSameAs(jobsComputedExpected[i]);
                 actualComputedJobs[i].Value.Value.Should().Be(jobsComputedExpected[i].Value.Value);
+                actualComputedJobs[i].Value.CellType.Should().Be(jobsComputedExpected[i].Value.CellType);
                 actualComputedJobs[i].Key.Should().Be(jobsComputedExpected[i].Key);
+
+                if (actualComputedJobs[i].Value.CellType.Equals(CellType.Error))
+                {
+                    actualComputedJobs[i].Value.IsErrorCell.Should().BeTrue();
+                }
             }
         }
     }
