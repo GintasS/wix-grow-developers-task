@@ -29,10 +29,8 @@ namespace SpreadsheetEvaluator.Application
             try
             {
                 var getJobHttpResponse = hubService.GetJobs();
-                getJobHttpResponse.EnsureSuccessStatusCode();
-
-                var getJobsRaw = getJobHttpResponse.Content.ReadAsStringAsync().Result;
-                jobsGetRawResponse = JsonConvert.DeserializeObject<JobsGetRawResponse>(getJobsRaw);
+                var jsonString = getJobHttpResponse.Content.ReadAsStringAsync().Result;
+                jobsGetRawResponse = JsonConvert.DeserializeObject<JobsGetRawResponse>(jsonString);
             }
             catch(Exception ex)
             {
@@ -46,8 +44,6 @@ namespace SpreadsheetEvaluator.Application
 
             // 5. Compute formulas for cells.
             var computedJobs = formulaEvaluatorService.ComputeFormulas(createdJobs);
-
-            computedJobs.RemoveAt(0);
 
             // 6. Create a post request to send to the Hub Api.
             var jobsPostRequest = jobsPostRequestHelper.CreatePostRequest(computedJobs);
@@ -70,8 +66,6 @@ namespace SpreadsheetEvaluator.Application
                 var postJobsHttpResponse = hubService.PostJobs(jobsGetRawResponse.SubmissionUrl, payload);
                 var responseText = postJobsHttpResponse.Content.ReadAsStringAsync().Result;
                 jobsPostResponse = JsonConvert.DeserializeObject<JobsPostResponse>(responseText);
-
-                postJobsHttpResponse.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
@@ -80,11 +74,10 @@ namespace SpreadsheetEvaluator.Application
                 return (int)ExitCode.ErrorPostJobs;
             }
 
-            // 9. Display success message if our results were received and they were correct.
+            // 9. Display a success message if our results were received and they were correct.
             Console.WriteLine(jobsPostResponse.Message);
 
             return (int) ExitCode.Success;
         }
-
     }
 }
